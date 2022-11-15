@@ -44,11 +44,16 @@ internal class IastRequestContext
     {
         foreach (var header in headers)
         {
+            if (!string.IsNullOrEmpty(header.Key))
+            {
+                _taintedObjects.TaintInputString(header.Key, new Source(SourceType.RequestHeaderName.Item1, null, header.Key));
+            }
+
             foreach (var value in header.Value)
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    _taintedObjects.TaintInputString(value, new Source(SourceType.REQUEST_PARAMETER_VALUE, header.Key, value));
+                    _taintedObjects.TaintInputString(value, new Source(SourceType.RequestHeaderValue.Item1, header.Key, value));
                 }
             }
         }
