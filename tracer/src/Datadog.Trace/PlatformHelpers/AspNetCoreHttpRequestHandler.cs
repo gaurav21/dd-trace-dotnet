@@ -129,6 +129,12 @@ namespace Datadog.Trace.PlatformHelpers
                 Headers.Ip.RequestIpExtractor.AddIpToTags(peerIp, request.IsHttps, getRequestHeaderFromKey, tracer.Settings.IpHeader, tags);
             }
 
+            if (Iast.Iast.Instance.Settings.Enabled)
+            {
+                // If the overheadController disables the vulnerability detection, we disable it
+                scope.Span?.Context?.TraceContext?.IastRequestContext?.TaintHeaders(request.Headers);
+            }
+
             tags.SetAnalyticsSampleRate(_integrationId, tracer.Settings, enabledWithGlobalSetting: true);
             tracer.TracerManager.Telemetry.IntegrationGeneratedSpan(_integrationId);
 

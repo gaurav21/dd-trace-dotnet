@@ -5,12 +5,15 @@
 
 #nullable enable
 
+using Microsoft.AspNetCore.Http;
+
 namespace Datadog.Trace.Iast;
 
 internal class IastRequestContext
 {
     private VulnerabilityBatch? _vulnerabilityBatch;
     private object _vulnerabilityLock = new();
+    private TaintedObjects _taintedObjects;
 
     public static void AddsIastTagsToSpan(Span span, IastRequestContext? iastRequestContext)
     {
@@ -35,4 +38,20 @@ internal class IastRequestContext
             _vulnerabilityBatch.Add(vulnerability);
         }
     }
+
+#if !NETFRAMEWORK
+    internal void TaintHeaders(IHeaderDictionary headers)
+    {
+        foreach (var header in headers)
+        {
+            foreach (var value in header.Value)
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _taintedObjects.TaintInputString(value, new Source(SourceType.REQUEST_PARAMETER_VALUE, header.Key, value));
+                }
+            }
+        }
+    }
+#endif
 }
