@@ -215,6 +215,7 @@ namespace Datadog.Trace.TestHelpers
                 payload ??= serializer.Deserialize<AppDependenciesLoadedPayload>(reader);
                 payload ??= serializer.Deserialize<AppIntegrationsChangedPayload>(reader);
                 payload ??= serializer.Deserialize<GenerateMetricsPayload>(reader);
+                payload ??= serializer.Deserialize<DistributionsPayload>(reader);
 
                 if (payload is null)
                 {
