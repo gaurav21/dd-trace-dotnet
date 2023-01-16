@@ -10,7 +10,7 @@ namespace Datadog.Trace.Telemetry.Metrics;
 
 internal static class TelemetryMetrics
 {
-    private static IMetricsTelemetryCollector _instance = NullMetricsTelemetryCollector.Instance;
+    private static IMetricsTelemetryCollector _instance = new MetricsTelemetryCollector();
 
     /// <summary>
     /// Gets the static instance used to record telemetry
