@@ -7,9 +7,6 @@
 
 namespace Datadog.Trace.Telemetry.Metrics;
 
-/// <summary>
-/// Required by the TelemetryMetric source generator
-/// </summary>
 internal enum PublicApiUsage
 {
 }
