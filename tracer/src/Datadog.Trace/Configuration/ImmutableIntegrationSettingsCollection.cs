@@ -5,6 +5,8 @@
 
 using System.Collections.Generic;
 using Datadog.Trace.Logging;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
@@ -34,25 +36,32 @@ namespace Datadog.Trace.Configuration
         /// </summary>
         /// <param name="integrationName">The name of the integration.</param>
         /// <returns>The integration-specific settings for the specified integration.</returns>
+        [PublicApi]
         public ImmutableIntegrationSettings this[string integrationName]
         {
             get
             {
-                if (IntegrationRegistry.TryGetIntegrationId(integrationName, out var integrationId))
-                {
-                    return Settings[(int)integrationId];
-                }
-
-                Log.Warning(
-                    "Accessed integration settings for unknown integration {IntegrationName}. Returning default settings",
-                    integrationName);
-
-                return new ImmutableIntegrationSettings(integrationName);
+                TelemetryMetrics.Instance.Record(PublicApiUsage.ImmutableIntegrationSettingsCollection_Indexer_Name);
+                return Get(integrationName);
             }
         }
 
         internal ImmutableIntegrationSettings this[IntegrationId integration]
             => Settings[(int)integration];
+
+        internal ImmutableIntegrationSettings Get(string integrationName)
+        {
+            if (IntegrationRegistry.TryGetIntegrationId(integrationName, out var integrationId))
+            {
+                return Settings[(int)integrationId];
+            }
+
+            Log.Warning(
+                "Accessed integration settings for unknown integration {IntegrationName}. Returning default settings",
+                integrationName);
+
+            return new ImmutableIntegrationSettings(integrationName);
+        }
 
         private static ImmutableIntegrationSettings[] GetIntegrationSettingsById(
             IntegrationSettingsCollection settings,

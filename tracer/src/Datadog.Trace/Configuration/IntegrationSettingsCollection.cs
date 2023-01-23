@@ -5,6 +5,8 @@
 
 using System;
 using Datadog.Trace.Logging;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
@@ -20,9 +22,16 @@ namespace Datadog.Trace.Configuration
         /// Initializes a new instance of the <see cref="IntegrationSettingsCollection"/> class.
         /// </summary>
         /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
+        [PublicApi]
         public IntegrationSettingsCollection(IConfigurationSource source)
+            : this(GetIntegrationSettings(source))
         {
-            _settings = GetIntegrationSettings(source);
+            TelemetryMetrics.Instance.Record(PublicApiUsage.IntegrationSettingsCollection_Ctor_Source);
+        }
+
+        private IntegrationSettingsCollection(IntegrationSettings[] settings)
+        {
+            _settings = settings;
         }
 
         internal IntegrationSettings[] Settings => _settings;
@@ -32,22 +41,32 @@ namespace Datadog.Trace.Configuration
         /// </summary>
         /// <param name="integrationName">The name of the integration.</param>
         /// <returns>The integration-specific settings for the specified integration.</returns>
+        [PublicApi]
         public IntegrationSettings this[string integrationName]
         {
             get
             {
-                if (IntegrationRegistry.TryGetIntegrationId(integrationName, out var integrationId))
-                {
-                    return _settings[(int)integrationId];
-                }
-
-                Log.Warning(
-                    "Accessed integration settings for unknown integration {IntegrationName}. " +
-                    "Returning default settings, changes will not be saved",
-                    integrationName);
-
-                return new IntegrationSettings(integrationName, source: null);
+                TelemetryMetrics.Instance.Record(PublicApiUsage.IntegrationSettingsCollection_Indexer_Name);
+                return Get(integrationName);
             }
+        }
+
+        internal static IntegrationSettingsCollection Create(IConfigurationSource source)
+            => new(GetIntegrationSettings(source));
+
+        internal IntegrationSettings Get(string integrationName)
+        {
+            if (IntegrationRegistry.TryGetIntegrationId(integrationName, out var integrationId))
+            {
+                return _settings[(int)integrationId];
+            }
+
+            Log.Warning(
+                "Accessed integration settings for unknown integration {IntegrationName}. " +
+                "Returning default settings, changes will not be saved",
+                integrationName);
+
+            return new IntegrationSettings(source: null, integrationName);
         }
 
         private static IntegrationSettings[] GetIntegrationSettings(IConfigurationSource source)

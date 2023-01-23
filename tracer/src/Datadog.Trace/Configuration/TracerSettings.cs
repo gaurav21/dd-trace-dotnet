@@ -74,7 +74,7 @@ namespace Datadog.Trace.Configuration
 
             DisabledIntegrationNames = new HashSet<string>(disabledIntegrationNames, StringComparer.OrdinalIgnoreCase);
 
-            Integrations = new IntegrationSettingsCollection(source);
+            Integrations = IntegrationSettingsCollection.Create(source);
 
             Exporter = new ExporterSettings(source, ExporterSettings.DefaultExistsCheck);
 
