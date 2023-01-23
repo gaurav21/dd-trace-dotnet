@@ -14,6 +14,7 @@ using Datadog.Trace.Ci;
 using Datadog.Trace.Ci.Tags;
 using Datadog.Trace.ExtensionMethods;
 using Datadog.Trace.Logging;
+using Datadog.Trace.Sampling;
 
 namespace Datadog.Trace.BenchmarkDotNet
 {
@@ -65,7 +66,7 @@ namespace Datadog.Trace.BenchmarkDotNet
                     Span span = tracer.StartSpan("benchmarkdotnet.test", startTime: startTime);
                     double durationNanoseconds = 0;
 
-                    span.SetTraceSamplingPriority(SamplingPriority.AutoKeep);
+                    span.Context.TraceContext.SetSamplingPriority((int)SamplingPriority.AutoKeep, SamplingMechanism.Manual);
                     span.Type = SpanTypes.Test;
                     span.ResourceName = $"{report.BenchmarkCase.Descriptor.Type.FullName}.{report.BenchmarkCase.Descriptor.WorkloadMethod.Name}";
                     CIEnvironmentValues.Instance.DecorateSpan(span);

@@ -9,7 +9,9 @@ using Datadog.Trace.Configuration;
 using Datadog.Trace.Headers;
 using Datadog.Trace.Propagators;
 using Datadog.Trace.Sampling;
+using Datadog.Trace.SourceGenerators;
 using Datadog.Trace.Tagging;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Util;
 using Datadog.Trace.Vendors.Serilog;
 
@@ -28,8 +30,10 @@ namespace Datadog.Trace.ExtensionMethods
         /// <remarks>
         /// This public extension method is meant for external users only. Internal Datadog calls should
         /// use the methods on <see cref="TraceContext"/> instead.</remarks>
+        [PublicApi]
         public static void SetTraceSamplingPriority(this ISpan span, SamplingPriority samplingPriority)
         {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.SpanExtensions_SetTraceSamplingPriority);
             if (span == null) { ThrowHelper.ThrowArgumentNullException(nameof(span)); }
 
             if (span.Context is SpanContext { TraceContext: { } traceContext })
