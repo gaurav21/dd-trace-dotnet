@@ -4,6 +4,8 @@
 // </copyright>
 
 using Datadog.Trace.Logging;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Vendors.Serilog.Events;
 
 namespace Datadog.Trace.Configuration
@@ -28,7 +30,7 @@ namespace Datadog.Trace.Configuration
         /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
         internal GlobalSettings(IConfigurationSource source)
         {
-            DebugEnabled = source?.GetBool(ConfigurationKeys.DebugEnabled) ??
+            DebugEnabledInternal = source?.GetBool(ConfigurationKeys.DebugEnabled) ??
                            // default value
                            false;
 
@@ -43,12 +45,22 @@ namespace Datadog.Trace.Configuration
         /// Set in code via <see cref="SetDebugEnabled"/>
         /// </summary>
         /// <seealso cref="ConfigurationKeys.DebugEnabled"/>
-        public bool DebugEnabled { get; private set; }
+        [PublicApi]
+        public bool DebugEnabled
+        {
+            get
+            {
+                TelemetryMetrics.Instance.Record(PublicApiUsage.GlobalSettings_DebugEnabled_Get);
+                return DebugEnabledInternal;
+            }
+        }
 
         /// <summary>
         /// Gets the global settings instance.
         /// </summary>
-        internal static GlobalSettings Instance { get; private set; } = FromDefaultSources();
+        internal static GlobalSettings Instance { get; private set; } = CreateFromDefaultSources();
+
+        internal bool DebugEnabledInternal { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the use
@@ -63,9 +75,16 @@ namespace Datadog.Trace.Configuration
         /// Affects the level of logs written to file.
         /// </summary>
         /// <param name="enabled">Whether debug is enabled.</param>
+        [PublicApi]
         public static void SetDebugEnabled(bool enabled)
         {
-            Instance.DebugEnabled = enabled;
+            TelemetryMetrics.Instance.Record(PublicApiUsage.GlobalSettings_SetDebugEnabled);
+            SetDebugEnabledInternal(enabled);
+        }
+
+        internal static void SetDebugEnabledInternal(bool enabled)
+        {
+            Instance.DebugEnabledInternal = enabled;
 
             if (enabled)
             {
@@ -81,11 +100,13 @@ namespace Datadog.Trace.Configuration
         /// Used to refresh global settings when environment variables or config sources change.
         /// This is not necessary if changes are set via code, only environment.
         /// </summary>
+        [PublicApi]
         public static void Reload()
         {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.GlobalSettings_Reload);
             DatadogLogging.Reset();
             GlobalConfigurationSource.Reload();
-            Instance = FromDefaultSources();
+            Instance = CreateFromDefaultSources();
         }
 
         /// <summary>
@@ -93,9 +114,13 @@ namespace Datadog.Trace.Configuration
         /// returned by <see cref="GlobalConfigurationSource.Instance"/>.
         /// </summary>
         /// <returns>A <see cref="TracerSettings"/> populated from the default sources.</returns>
+        [PublicApi]
         public static GlobalSettings FromDefaultSources()
         {
-            return new GlobalSettings(GlobalConfigurationSource.Instance);
+            TelemetryMetrics.Instance.Record(PublicApiUsage.GlobalSettings_FromDefaultSources);
+            return CreateFromDefaultSources();
         }
+
+        private static GlobalSettings CreateFromDefaultSources() => new(GlobalConfigurationSource.Instance);
     }
 }
