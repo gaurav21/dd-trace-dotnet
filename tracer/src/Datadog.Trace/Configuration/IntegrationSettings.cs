@@ -4,69 +4,84 @@
 // </copyright>
 
 using System;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Util;
 
 namespace Datadog.Trace.Configuration
 {
+#pragma warning disable SA1401 // field should be private
     /// <summary>
     /// Contains integration-specific settings.
     /// </summary>
-    public class IntegrationSettings
+    public partial class IntegrationSettings
     {
+        /// <summary>
+        /// Gets the name of the integration. Used to retrieve integration-specific settings.
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.IntegrationSettings_IntegrationName_Get)]
+        internal string IntegrationNameInternal;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether
+        /// this integration is enabled.
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.IntegrationSettings_Enabled_Get, PublicApiUsage.IntegrationSettings_Enabled_Set)]
+        internal bool? EnabledInternal;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether
+        /// Analytics are enabled for this integration.
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.IntegrationSettings_AnalyticsEnabled_Get, PublicApiUsage.IntegrationSettings_AnalyticsEnabled_Set)]
+        internal bool? AnalyticsEnabledInternal;
+
+        /// <summary>
+        /// Gets or sets a value between 0 and 1 (inclusive)
+        /// that determines the sampling rate for this integration.
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.IntegrationSettings_AnalyticsSampleRate_Get, PublicApiUsage.IntegrationSettings_AnalyticsSampleRate_Set)]
+        internal double AnalyticsSampleRateInternal;
+#pragma warning restore SA1401
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IntegrationSettings"/> class.
         /// </summary>
         /// <param name="integrationName">The integration name.</param>
         /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
+        [PublicApi]
         public IntegrationSettings(string integrationName, IConfigurationSource source)
+            : this(source, integrationName)
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.IntegrationSettings_Ctor);
+        }
+
+        internal IntegrationSettings(IConfigurationSource source, string integrationName)
         {
             if (integrationName is null)
             {
                 ThrowHelper.ThrowArgumentNullException(nameof(integrationName));
             }
 
-            IntegrationName = integrationName;
+            IntegrationNameInternal = integrationName;
 
             if (source == null)
             {
                 return;
             }
 
-            Enabled = source.GetBool(string.Format(ConfigurationKeys.Integrations.Enabled, integrationName)) ??
+            EnabledInternal = source.GetBool(string.Format(ConfigurationKeys.Integrations.Enabled, integrationName)) ??
                       source.GetBool(string.Format("DD_{0}_ENABLED", integrationName));
 
 #pragma warning disable 618 // App analytics is deprecated, but still used
-            AnalyticsEnabled = source.GetBool(string.Format(ConfigurationKeys.Integrations.AnalyticsEnabled, integrationName)) ??
+            AnalyticsEnabledInternal = source.GetBool(string.Format(ConfigurationKeys.Integrations.AnalyticsEnabled, integrationName)) ??
                                source.GetBool(string.Format("DD_{0}_ANALYTICS_ENABLED", integrationName));
 
-            AnalyticsSampleRate = source.GetDouble(string.Format(ConfigurationKeys.Integrations.AnalyticsSampleRate, integrationName)) ??
+            AnalyticsSampleRateInternal = source.GetDouble(string.Format(ConfigurationKeys.Integrations.AnalyticsSampleRate, integrationName)) ??
                                   source.GetDouble(string.Format("DD_{0}_ANALYTICS_SAMPLE_RATE", integrationName)) ??
                                   // default value
                                   1.0;
 #pragma warning restore 618
         }
-
-        /// <summary>
-        /// Gets the name of the integration. Used to retrieve integration-specific settings.
-        /// </summary>
-        public string IntegrationName { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether
-        /// this integration is enabled.
-        /// </summary>
-        public bool? Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether
-        /// Analytics are enabled for this integration.
-        /// </summary>
-        public bool? AnalyticsEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value between 0 and 1 (inclusive)
-        /// that determines the sampling rate for this integration.
-        /// </summary>
-        public double AnalyticsSampleRate { get; set; }
     }
 }

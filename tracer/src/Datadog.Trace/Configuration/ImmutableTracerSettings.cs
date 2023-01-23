@@ -433,7 +433,7 @@ namespace Datadog.Trace.Configuration
         {
             if (TraceEnabled && !_domainMetadata.ShouldAvoidAppDomain())
             {
-                return Integrations[integration].Enabled ?? defaultValue;
+                return Integrations[integration].EnabledInternal ?? defaultValue;
             }
 
             return false;
@@ -443,8 +443,8 @@ namespace Datadog.Trace.Configuration
         internal double? GetIntegrationAnalyticsSampleRate(IntegrationId integration, bool enabledWithGlobalSetting)
         {
             var integrationSettings = Integrations[integration];
-            var analyticsEnabled = integrationSettings.AnalyticsEnabled ?? (enabledWithGlobalSetting && AnalyticsEnabled);
-            return analyticsEnabled ? integrationSettings.AnalyticsSampleRate : (double?)null;
+            var analyticsEnabled = integrationSettings.AnalyticsEnabledInternal ?? (enabledWithGlobalSetting && AnalyticsEnabled);
+            return analyticsEnabled ? integrationSettings.AnalyticsSampleRateInternal : (double?)null;
         }
 
         internal string GetServiceName(Tracer tracer, string serviceName)

@@ -60,7 +60,7 @@ namespace Datadog.Trace.Configuration
 
                 if (name != null)
                 {
-                    integrations[i] = new IntegrationSettings(name, source);
+                    integrations[i] = new IntegrationSettings(source, name);
                 }
             }
 
