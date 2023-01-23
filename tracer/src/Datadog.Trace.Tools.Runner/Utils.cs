@@ -274,10 +274,10 @@ namespace Datadog.Trace.Tools.Runner
                 env["DD_TRACE_AGENT_URL"] = agentUrl;
             }
 
-            var configurationSource = new CompositeConfigurationSource()
+            var configurationSource = new CompositeConfigurationSource(initialCapacity: 2)
             {
                 GlobalConfigurationSource.Instance,
-                new NameValueConfigurationSource(env)
+                new NameValueConfigurationSource(env, true)
             };
 
             var tracerSettings = new TracerSettings(configurationSource);

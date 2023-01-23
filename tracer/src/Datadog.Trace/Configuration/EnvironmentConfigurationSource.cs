@@ -4,6 +4,8 @@
 // </copyright>
 
 using System;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
@@ -13,6 +15,20 @@ namespace Datadog.Trace.Configuration
     /// </summary>
     public class EnvironmentConfigurationSource : StringConfigurationSource
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnvironmentConfigurationSource"/> class.
+        /// </summary>
+        [PublicApi]
+        public EnvironmentConfigurationSource()
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.EnvironmentConfigurationSource_Ctor);
+        }
+
+        internal EnvironmentConfigurationSource(bool chooseThisOverload)
+            : base(chooseThisOverload)
+        {
+        }
+
         /// <inheritdoc />
         public override string GetString(string key)
         {

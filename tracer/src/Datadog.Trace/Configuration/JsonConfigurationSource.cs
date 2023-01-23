@@ -8,6 +8,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Datadog.Trace.Logging;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Vendors.Newtonsoft.Json;
 using Datadog.Trace.Vendors.Newtonsoft.Json.Linq;
 
@@ -28,9 +30,16 @@ namespace Datadog.Trace.Configuration
         /// class with the specified JSON string.
         /// </summary>
         /// <param name="json">A JSON string that contains configuration values.</param>
+        [PublicApi]
         public JsonConfigurationSource(string json)
         {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.JsonConfigurationSource_Ctor_Json);
             _configuration = (JObject)JsonConvert.DeserializeObject(json);
+        }
+
+        internal JsonConfigurationSource(JObject json)
+        {
+            _configuration = json;
         }
 
         /// <summary>
@@ -39,10 +48,17 @@ namespace Datadog.Trace.Configuration
         /// </summary>
         /// <param name="filename">A JSON file that contains configuration values.</param>
         /// <returns>The newly created configuration source.</returns>
+        [PublicApi]
         public static JsonConfigurationSource FromFile(string filename)
         {
-            string json = File.ReadAllText(filename);
-            return new JsonConfigurationSource(json);
+            TelemetryMetrics.Instance.Record(PublicApiUsage.JsonConfigurationSource_FromFile);
+            return FromFileInternal(filename);
+        }
+
+        internal static JsonConfigurationSource FromFileInternal(string filename)
+        {
+            var json = File.ReadAllText(filename);
+            return new JsonConfigurationSource((JObject)JsonConvert.DeserializeObject(json));
         }
 
         /// <summary>

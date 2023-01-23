@@ -8,6 +8,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using Datadog.Trace.ExtensionMethods;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
@@ -18,6 +20,19 @@ namespace Datadog.Trace.Configuration
     public abstract class StringConfigurationSource : IConfigurationSource
     {
         private static readonly char[] DictionarySeparatorChars = { ',' };
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringConfigurationSource"/> class.
+        /// </summary>
+        [PublicApi]
+        public StringConfigurationSource()
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.StringConfigurationSource_Ctor);
+        }
+
+        internal StringConfigurationSource(bool chooseThisOverload)
+        {
+        }
 
         /// <summary>
         /// Returns a <see cref="IDictionary{TKey, TValue}"/> from parsing

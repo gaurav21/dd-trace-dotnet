@@ -4,6 +4,8 @@
 // </copyright>
 
 using System.Collections.Specialized;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
@@ -20,7 +22,15 @@ namespace Datadog.Trace.Configuration
         /// that wraps the specified <see cref="NameValueCollection"/>.
         /// </summary>
         /// <param name="nameValueCollection">The collection that will be wrapped by this configuration source.</param>
+        [PublicApi]
         public NameValueConfigurationSource(NameValueCollection nameValueCollection)
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.NameValueConfigurationSource_Ctor);
+            _nameValueCollection = nameValueCollection;
+        }
+
+        internal NameValueConfigurationSource(NameValueCollection nameValueCollection, bool chooseThisOverload)
+            : base(chooseThisOverload)
         {
             _nameValueCollection = nameValueCollection;
         }

@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Util;
 
 namespace Datadog.Trace.Configuration
@@ -17,7 +19,25 @@ namespace Datadog.Trace.Configuration
     /// </summary>
     public class CompositeConfigurationSource : IConfigurationSource, IEnumerable<IConfigurationSource>
     {
-        private readonly List<IConfigurationSource> _sources = new List<IConfigurationSource>();
+        private readonly List<IConfigurationSource> _sources;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositeConfigurationSource"/> class.
+        /// </summary>
+        [PublicApi]
+        public CompositeConfigurationSource()
+            : this(initialCapacity: null)
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.CompositeConfigurationSource_Ctor);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompositeConfigurationSource"/> class.
+        /// </summary>
+        internal CompositeConfigurationSource(int? initialCapacity)
+        {
+            _sources = initialCapacity.HasValue ? new(initialCapacity.Value) : new();
+        }
 
         /// <summary>
         /// Adds a new configuration source to this instance.

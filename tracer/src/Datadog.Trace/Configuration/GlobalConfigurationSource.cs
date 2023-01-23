@@ -26,13 +26,13 @@ internal class GlobalConfigurationSource
     internal static CompositeConfigurationSource CreateDefaultConfigurationSource()
     {
         // env > AppSettings > datadog.json
-        var configurationSource = new CompositeConfigurationSource
+        var configurationSource = new CompositeConfigurationSource(initialCapacity: 3)
         {
-            new EnvironmentConfigurationSource(),
+            new EnvironmentConfigurationSource(true),
 
 #if NETFRAMEWORK
             // on .NET Framework only, also read from app.config/web.config
-            new NameValueConfigurationSource(System.Configuration.ConfigurationManager.AppSettings)
+            new NameValueConfigurationSource(System.Configuration.ConfigurationManager.AppSettings, true)
 #endif
         };
 
@@ -56,7 +56,7 @@ internal class GlobalConfigurationSource
             if (string.Equals(Path.GetExtension(configurationFileName), ".JSON", StringComparison.OrdinalIgnoreCase) &&
                 File.Exists(configurationFileName))
             {
-                jsonConfigurationSource = JsonConfigurationSource.FromFile(configurationFileName);
+                jsonConfigurationSource = JsonConfigurationSource.FromFileInternal(configurationFileName);
                 return true;
             }
         }

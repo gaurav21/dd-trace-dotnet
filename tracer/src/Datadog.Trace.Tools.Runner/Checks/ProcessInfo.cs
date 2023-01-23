@@ -203,7 +203,7 @@ namespace Datadog.Trace.Tools.Runner.Checks
         {
             baseDirectory ??= Path.GetDirectoryName(MainModule);
 
-            var configurationSource = new CompositeConfigurationSource();
+            var configurationSource = new CompositeConfigurationSource(initialCapacity: 4);
 
             configurationSource.Add(new DictionaryConfigurationSource(EnvironmentVariables));
 
