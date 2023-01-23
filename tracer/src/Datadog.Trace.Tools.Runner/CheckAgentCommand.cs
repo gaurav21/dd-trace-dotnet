@@ -23,16 +23,16 @@ namespace Datadog.Trace.Tools.Runner
             if (settings.Url == null)
             {
                 // Try to autodetect the agent settings
-                configuration = new ExporterSettings(new EnvironmentConfigurationSource());
+                configuration = new ExporterSettings(new EnvironmentConfigurationSource(), ExporterSettings.DefaultExistsCheck);
 
                 AnsiConsole.WriteLine("No Agent URL provided, using environment variables");
             }
             else
             {
-                configuration = new ExporterSettings { AgentUri = new Uri(settings.Url) };
+                configuration = new ExporterSettings(null, ExporterSettings.DefaultExistsCheck) { AgentUriInternal = new Uri(settings.Url) };
             }
 
-            var result = await AgentConnectivityCheck.RunAsync(new ImmutableExporterSettings(configuration)).ConfigureAwait(false);
+            var result = await AgentConnectivityCheck.RunAsync(new ImmutableExporterSettings(configuration, true)).ConfigureAwait(false);
 
             if (!result)
             {

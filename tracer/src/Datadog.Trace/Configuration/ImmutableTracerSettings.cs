@@ -78,7 +78,7 @@ namespace Datadog.Trace.Configuration
 
             ServiceName = settings.ServiceName;
             TraceEnabled = settings.TraceEnabled;
-            Exporter = new ImmutableExporterSettings(settings.Exporter);
+            Exporter = new ImmutableExporterSettings(settings.Exporter, true);
 #pragma warning disable 618 // App analytics is deprecated, but still used
             AnalyticsEnabled = settings.AnalyticsEnabled;
 #pragma warning restore 618

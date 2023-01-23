@@ -76,7 +76,7 @@ namespace Datadog.Trace.Configuration
 
             Integrations = new IntegrationSettingsCollection(source);
 
-            Exporter = new ExporterSettings(source);
+            Exporter = new ExporterSettings(source, ExporterSettings.DefaultExistsCheck);
 
 #pragma warning disable 618 // App analytics is deprecated, but still used
             AnalyticsEnabled = source?.GetBool(ConfigurationKeys.GlobalAnalyticsEnabled) ??

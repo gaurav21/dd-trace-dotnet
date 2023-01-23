@@ -31,7 +31,7 @@ internal static class AgentTransportStrategy
     /// <param name="getHttpHeaderHelper">A func that returns an <see cref="HttpHeaderHelperBase"/> for use
     /// with <see cref="DatadogHttpClient"/></param>
     /// <param name="getBaseEndpoint">A func that returns the endpoint to send requests to for a given "base" endpoint.
-    /// The base endpoint will be <see cref="ImmutableExporterSettings.AgentUri" /> for TCP requests and
+    /// The base endpoint will be <see cref="ImmutableExporterSettings.AgentUriInternal" /> for TCP requests and
     /// http://localhost/ for named pipes/UDS</param>
     public static IApiRequestFactory Get(
         ImmutableExporterSettings settings,
@@ -47,25 +47,25 @@ internal static class AgentTransportStrategy
         {
             case TracesTransportType.WindowsNamedPipe:
                 // intentionally using string interpolation, as this is only called once, and avoids array allocation
-                Log.Information($"Using {nameof(NamedPipeClientStreamFactory)} for {productName} transport, with pipe name {settings.TracesPipeName} and timeout {settings.TracesPipeTimeoutMs}ms.");
+                Log.Information($"Using {nameof(NamedPipeClientStreamFactory)} for {productName} transport, with pipe name {settings.TracesPipeNameInternal} and timeout {settings.TracesPipeTimeoutMsInternal}ms.");
                 return new HttpStreamRequestFactory(
-                    new NamedPipeClientStreamFactory(settings.TracesPipeName, settings.TracesPipeTimeoutMs),
+                    new NamedPipeClientStreamFactory(settings.TracesPipeNameInternal, settings.TracesPipeTimeoutMsInternal),
                     new DatadogHttpClient(getHttpHeaderHelper()),
                     getBaseEndpoint(Localhost));
 
             case TracesTransportType.UnixDomainSocket:
 #if NET5_0_OR_GREATER
-                Log.Information("Using {FactoryType} for {ProductName} transport, with UDS path {Path}.", nameof(SocketHandlerRequestFactory), productName, settings.TracesUnixDomainSocketPath);
+                Log.Information("Using {FactoryType} for {ProductName} transport, with UDS path {Path}.", nameof(SocketHandlerRequestFactory), productName, settings.TracesUnixDomainSocketPathInternal);
                 // use http://localhost as base endpoint
                 return new SocketHandlerRequestFactory(
-                    new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPath),
+                    new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPathInternal),
                     defaultAgentHeaders,
                     getBaseEndpoint(Localhost));
 #elif NETCOREAPP3_1_OR_GREATER
                 // intentionally using string interpolation, as this is only called once, and avoids array allocation
-                Log.Information($"Using {nameof(UnixDomainSocketStreamFactory)} for {productName} transport, with Unix Domain Sockets path {settings.TracesUnixDomainSocketPath} and timeout {settings.TracesPipeTimeoutMs}ms.");
+                Log.Information($"Using {nameof(UnixDomainSocketStreamFactory)} for {productName} transport, with Unix Domain Sockets path {settings.TracesUnixDomainSocketPathInternal} and timeout {settings.TracesPipeTimeoutMsInternal}ms.");
                 return new HttpStreamRequestFactory(
-                    new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPath),
+                    new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPathInternal),
                     new DatadogHttpClient(getHttpHeaderHelper()),
                     getBaseEndpoint(Localhost));
 #else
@@ -76,10 +76,10 @@ internal static class AgentTransportStrategy
             default:
 #if NETCOREAPP
                 Log.Information("Using {FactoryType} for {ProductName} transport.", nameof(HttpClientRequestFactory), productName);
-                return new HttpClientRequestFactory(getBaseEndpoint(settings.AgentUri), defaultAgentHeaders, timeout: tcpTimeout);
+                return new HttpClientRequestFactory(getBaseEndpoint(settings.AgentUriInternal), defaultAgentHeaders, timeout: tcpTimeout);
 #else
                 Log.Information("Using {FactoryType} for {ProductName} transport.", nameof(ApiWebRequestFactory), productName);
-                return new ApiWebRequestFactory(getBaseEndpoint(settings.AgentUri), defaultAgentHeaders, timeout: tcpTimeout);
+                return new ApiWebRequestFactory(getBaseEndpoint(settings.AgentUriInternal), defaultAgentHeaders, timeout: tcpTimeout);
 #endif
         }
     }

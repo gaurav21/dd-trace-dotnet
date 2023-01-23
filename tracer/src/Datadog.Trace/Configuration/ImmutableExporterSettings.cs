@@ -7,49 +7,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Datadog.Trace.Agent;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.Configuration
 {
+#pragma warning disable SA1401 // field should be private
     /// <summary>
     /// Contains exporter related settings.
     /// </summary>
-    public class ImmutableExporterSettings
+    public partial class ImmutableExporterSettings
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImmutableExporterSettings"/> class
-        /// using the specified <see cref="IConfigurationSource"/> to initialize values.
-        /// </summary>
-        /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
-        public ImmutableExporterSettings(IConfigurationSource source)
-            : this(new ExporterSettings(source))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImmutableExporterSettings"/> class from
-        /// a TracerSettings instance.
-        /// </summary>
-        /// <param name="settings">The tracer settings to use to populate the immutable tracer settings</param>
-        public ImmutableExporterSettings(ExporterSettings settings)
-        {
-            AgentUri = settings.AgentUri;
-
-            TracesTransport = settings.TracesTransport;
-            TracesPipeName = settings.TracesPipeName;
-            TracesPipeTimeoutMs = settings.TracesPipeTimeoutMs;
-
-            MetricsTransport = settings.MetricsTransport;
-            MetricsPipeName = settings.MetricsPipeName;
-            DogStatsdPort = settings.DogStatsdPort;
-
-            TracesUnixDomainSocketPath = settings.TracesUnixDomainSocketPath;
-            MetricsUnixDomainSocketPath = settings.MetricsUnixDomainSocketPath;
-
-            PartialFlushEnabled = settings.PartialFlushEnabled;
-            PartialFlushMinSpans = settings.PartialFlushMinSpans;
-            ValidationWarnings = settings.ValidationWarnings.ToList();
-        }
-
         /// <summary>
         /// Gets the Uri where the Tracer can connect to the Agent.
         /// Default is <c>"http://localhost:8126"</c>.
@@ -57,57 +25,117 @@ namespace Datadog.Trace.Configuration
         /// <seealso cref="ConfigurationKeys.AgentUri"/>
         /// <seealso cref="ConfigurationKeys.AgentHost"/>
         /// <seealso cref="ConfigurationKeys.AgentPort"/>
-        public Uri AgentUri { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_AgentUri_Get)]
+        internal Uri AgentUriInternal;
 
         /// <summary>
         /// Gets the windows pipe name where the Tracer can connect to the Agent.
         /// Default is <c>null</c>.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.TracesPipeName"/>
-        public string TracesPipeName { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_TracesPipeName_Get)]
+        internal string TracesPipeNameInternal;
 
         /// <summary>
         /// Gets the timeout in milliseconds for the windows named pipe requests.
         /// Default is <c>100</c>.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.TracesPipeTimeoutMs"/>
-        public int TracesPipeTimeoutMs { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_TracesPipeTimeoutMs_Get)]
+        internal int TracesPipeTimeoutMsInternal;
 
         /// <summary>
         /// Gets the windows pipe name where the Tracer can send stats.
         /// Default is <c>null</c>.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.MetricsPipeName"/>
-        public string MetricsPipeName { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_MetricsPipeName_Get)]
+        internal string MetricsPipeNameInternal;
 
         /// <summary>
         /// Gets the port where the DogStatsd server is listening for connections.
         /// Default is <c>8125</c>.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.DogStatsdPort"/>
-        public int DogStatsdPort { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_DogStatsdPort_Get)]
+        internal int DogStatsdPortInternal;
 
         /// <summary>
         /// Gets a value indicating whether partial flush is enabled
         /// </summary>
-        public bool PartialFlushEnabled { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_PartialFlushEnabled_Get)]
+        internal bool PartialFlushEnabledInternal;
 
         /// <summary>
         /// Gets the minimum number of closed spans in a trace before it's partially flushed
         /// </summary>
-        public int PartialFlushMinSpans { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_PartialFlushMinSpans_Get)]
+        internal int PartialFlushMinSpansInternal;
 
         /// <summary>
         /// Gets the unix domain socket path where the Tracer can connect to the Agent.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.TracesUnixDomainSocketPath"/>
-        public string TracesUnixDomainSocketPath { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_TracesUnixDomainSocketPath_Get)]
+        internal string TracesUnixDomainSocketPathInternal;
 
         /// <summary>
         /// Gets the unix domain socket path where the Tracer can send stats.
         /// </summary>
         /// <seealso cref="ConfigurationKeys.MetricsUnixDomainSocketPath"/>
-        public string MetricsUnixDomainSocketPath { get; }
+        [GeneratePublicApi(PublicApiUsage.ImmutableExporterSettings_MetricsUnixDomainSocketPath_Get)]
+        internal string MetricsUnixDomainSocketPathInternal;
+#pragma warning restore SA1401
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableExporterSettings"/> class
+        /// using the specified <see cref="IConfigurationSource"/> to initialize values.
+        /// </summary>
+        /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
+        [PublicApi]
+        public ImmutableExporterSettings(IConfigurationSource source)
+            : this(new ExporterSettings(source, ExporterSettings.DefaultExistsCheck), false)
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.ImmutableExporterSettings_Ctor_Source);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableExporterSettings"/> class from
+        /// a TracerSettings instance.
+        /// </summary>
+        /// <param name="settings">The tracer settings to use to populate the immutable tracer settings</param>
+        [PublicApi]
+        public ImmutableExporterSettings(ExporterSettings settings)
+            : this(settings, false)
+        {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.ImmutableExporterSettings_Ctor_Settings);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImmutableExporterSettings"/> class.
+        /// Internal constructor that should be used inside the library.
+        /// </summary>
+        /// <param name="settings">The tracer settings to use to populate the immutable tracer settings</param>
+        /// <param name="calledDirectly">Unused variable to create an overload that is only called internally</param>
+        internal ImmutableExporterSettings(ExporterSettings settings, bool calledDirectly)
+        {
+            AgentUriInternal = settings.AgentUriInternal;
+
+            TracesTransport = settings.TracesTransport;
+            TracesPipeNameInternal = settings.TracesPipeNameInternal;
+            TracesPipeTimeoutMsInternal = settings.TracesPipeTimeoutMsInternal;
+
+            MetricsTransport = settings.MetricsTransport;
+            MetricsPipeNameInternal = settings.MetricsPipeNameInternal;
+            DogStatsdPortInternal = settings.DogStatsdPortInternal;
+
+            TracesUnixDomainSocketPathInternal = settings.TracesUnixDomainSocketPathInternal;
+            MetricsUnixDomainSocketPathInternal = settings.MetricsUnixDomainSocketPathInternal;
+
+            PartialFlushEnabledInternal = settings.PartialFlushEnabledInternal;
+            PartialFlushMinSpansInternal = settings.PartialFlushMinSpansInternal;
+            ValidationWarnings = settings.ValidationWarnings.ToList();
+        }
 
         /// <summary>
         /// Gets the transport used to send traces to the Agent.

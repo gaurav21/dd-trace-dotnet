@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Datadog.Trace.Agent;
+using Datadog.Trace.SourceGenerators;
+using Datadog.Trace.Telemetry.Metrics;
 using MetricsTransportType = Datadog.Trace.Vendors.StatsdClient.Transport.TransportType;
 
 namespace Datadog.Trace.Configuration
@@ -14,7 +16,7 @@ namespace Datadog.Trace.Configuration
     /// <summary>
     /// Contains exporter settings.
     /// </summary>
-    public class ExporterSettings
+    public partial class ExporterSettings
     {
         /// <summary>
         /// Allows overriding of file system access for tests.
@@ -23,14 +25,69 @@ namespace Datadog.Trace.Configuration
 
         private int _partialFlushMinSpans;
         private Uri _agentUri;
+#pragma warning disable SA1401 // field should be private
+        internal static readonly Func<string, bool> DefaultExistsCheck = File.Exists;
 
         /// <summary>
-        /// The default host value for <see cref="AgentUri"/>.
+        /// Gets or sets the windows pipe name where the Tracer can connect to the Agent.
+        /// Default is <c>null</c>.
+        /// </summary>
+        /// <seealso cref="ConfigurationKeys.TracesPipeName"/>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_TracesPipeName_Get, PublicApiUsage.ExporterSettings_TracesPipeName_Set)]
+        internal string TracesPipeNameInternal;
+
+        /// <summary>
+        /// Gets or sets the timeout in milliseconds for the windows named pipe requests.
+        /// Default is <c>100</c>.
+        /// </summary>
+        /// <seealso cref="ConfigurationKeys.TracesPipeTimeoutMs"/>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_TracesPipeTimeoutMs_Get, PublicApiUsage.ExporterSettings_TracesPipeTimeoutMs_Set)]
+        internal int TracesPipeTimeoutMsInternal;
+
+        /// <summary>
+        /// Gets or sets the windows pipe name where the Tracer can send stats.
+        /// Default is <c>null</c>.
+        /// </summary>
+        /// <seealso cref="ConfigurationKeys.MetricsPipeName"/>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_MetricsPipeName_Get, PublicApiUsage.ExporterSettings_MetricsPipeName_Set)]
+        internal string MetricsPipeNameInternal;
+
+        /// <summary>
+        /// Gets or sets the unix domain socket path where the Tracer can connect to the Agent.
+        /// This parameter is deprecated and shall be removed. Consider using AgentUri instead
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_TracesUnixDomainSocketPath_Get, PublicApiUsage.ExporterSettings_TracesUnixDomainSocketPath_Set)]
+        internal string TracesUnixDomainSocketPathInternal;
+
+        /// <summary>
+        /// Gets or sets the unix domain socket path where the Tracer can send stats.
+        /// </summary>
+        /// <seealso cref="ConfigurationKeys.MetricsUnixDomainSocketPath"/>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_MetricsUnixDomainSocketPath_Get, PublicApiUsage.ExporterSettings_MetricsUnixDomainSocketPath_Set)]
+        internal string MetricsUnixDomainSocketPathInternal;
+
+        /// <summary>
+        /// Gets or sets the port where the DogStatsd server is listening for connections.
+        /// Default is <c>8125</c>.
+        /// </summary>
+        /// <seealso cref="ConfigurationKeys.DogStatsdPort"/>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_DogStatsdPort_Get, PublicApiUsage.ExporterSettings_DogStatsdPort_Set)]
+        internal int DogStatsdPortInternal;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether partial flush is enabled
+        /// </summary>
+        [GeneratePublicApi(PublicApiUsage.ExporterSettings_PartialFlushEnabled_Get, PublicApiUsage.ExporterSettings_PartialFlushEnabled_Set)]
+        internal bool PartialFlushEnabledInternal;
+#pragma warning restore SA1401
+
+        /// <summary>
+        /// The default host value for <see cref="AgentUriInternal"/>.
         /// </summary>
         public const string DefaultAgentHost = "localhost";
 
         /// <summary>
-        /// The default port value for <see cref="AgentUri"/>.
+        /// The default port value for <see cref="AgentUriInternal"/>.
         /// </summary>
         public const int DefaultAgentPort = 8126;
 
@@ -57,9 +114,11 @@ namespace Datadog.Trace.Configuration
         /// <summary>
         /// Initializes a new instance of the <see cref="ExporterSettings"/> class with default values.
         /// </summary>
+        [PublicApi]
         public ExporterSettings()
-            : this(null)
+            : this(null, DefaultExistsCheck)
         {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_Ctor);
         }
 
         /// <summary>
@@ -67,14 +126,16 @@ namespace Datadog.Trace.Configuration
         /// using the specified <see cref="IConfigurationSource"/> to initialize values.
         /// </summary>
         /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
+        [PublicApi]
         public ExporterSettings(IConfigurationSource source)
-            : this(source, File.Exists)
+            : this(source, DefaultExistsCheck)
         {
+            TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_Ctor_Source);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExporterSettings"/> class.
-        /// Direct use in tests only.
+        /// Should be used internally instead of using the public API constructors
         /// </summary>
         internal ExporterSettings(IConfigurationSource source, Func<string, bool> fileExists)
         {
@@ -105,9 +166,9 @@ namespace Datadog.Trace.Configuration
             ConfigureTraceTransport(traceAgentUrl, tracesPipeName, agentHost, agentPort, tracesUnixDomainSocketPath);
             ConfigureMetricsTransport(traceAgentUrl, agentHost, dogStatsdPort, metricsPipeName, metricsUnixDomainSocketPath);
 
-            TracesPipeTimeoutMs = tracesPipeTimeoutMs > 0 ? tracesPipeTimeoutMs : 500;
-            PartialFlushEnabled = source?.GetBool(ConfigurationKeys.PartialFlushEnabled) ?? false;
-            PartialFlushMinSpans = partialFlushMinSpans > 0 ? partialFlushMinSpans.Value : 500;
+            TracesPipeTimeoutMsInternal = tracesPipeTimeoutMs > 0 ? tracesPipeTimeoutMs : 500;
+            PartialFlushEnabledInternal = source?.GetBool(ConfigurationKeys.PartialFlushEnabled) ?? false;
+            PartialFlushMinSpansInternal = partialFlushMinSpans > 0 ? partialFlushMinSpans.Value : 500;
         }
 
         /// <summary>
@@ -117,7 +178,56 @@ namespace Datadog.Trace.Configuration
         /// <seealso cref="ConfigurationKeys.AgentUri"/>
         /// <seealso cref="ConfigurationKeys.AgentHost"/>
         /// <seealso cref="ConfigurationKeys.AgentPort"/>
+        [PublicApi]
         public Uri AgentUri
+        {
+            get
+            {
+                TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_AgentUri_Get);
+                return AgentUriInternal;
+            }
+
+            set
+            {
+                TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_AgentUri_Set);
+                AgentUriInternal = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum number of closed spans in a trace before it's partially flushed
+        /// </summary>
+        [PublicApi]
+        public int PartialFlushMinSpans
+        {
+            get
+            {
+                TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_PartialFlushMinSpans_Get);
+                return PartialFlushMinSpansInternal;
+            }
+
+            set
+            {
+                TelemetryMetrics.Instance.Record(PublicApiUsage.ExporterSettings_PartialFlushMinSpans_Set);
+                PartialFlushMinSpansInternal = value;
+            }
+        }
+
+        internal int PartialFlushMinSpansInternal
+        {
+            get => _partialFlushMinSpans;
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentException("The value must be strictly greater than 0", nameof(PartialFlushMinSpansInternal));
+                }
+
+                _partialFlushMinSpans = value;
+            }
+        }
+
+        internal Uri AgentUriInternal
         {
             get => _agentUri;
             set
@@ -128,68 +238,6 @@ namespace Datadog.Trace.Configuration
                 {
                     MetricsTransport = MetricsTransportType.UDP;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the windows pipe name where the Tracer can connect to the Agent.
-        /// Default is <c>null</c>.
-        /// </summary>
-        /// <seealso cref="ConfigurationKeys.TracesPipeName"/>
-        public string TracesPipeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timeout in milliseconds for the windows named pipe requests.
-        /// Default is <c>100</c>.
-        /// </summary>
-        /// <seealso cref="ConfigurationKeys.TracesPipeTimeoutMs"/>
-        public int TracesPipeTimeoutMs { get; set; }
-
-        /// <summary>
-        /// Gets or sets the windows pipe name where the Tracer can send stats.
-        /// Default is <c>null</c>.
-        /// </summary>
-        /// <seealso cref="ConfigurationKeys.MetricsPipeName"/>
-        public string MetricsPipeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unix domain socket path where the Tracer can connect to the Agent.
-        /// This parameter is deprecated and shall be removed. Consider using AgentUri instead
-        /// </summary>
-        public string TracesUnixDomainSocketPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unix domain socket path where the Tracer can send stats.
-        /// </summary>
-        /// <seealso cref="ConfigurationKeys.MetricsUnixDomainSocketPath"/>
-        public string MetricsUnixDomainSocketPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the port where the DogStatsd server is listening for connections.
-        /// Default is <c>8125</c>.
-        /// </summary>
-        /// <seealso cref="ConfigurationKeys.DogStatsdPort"/>
-        public int DogStatsdPort { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether partial flush is enabled
-        /// </summary>
-        public bool PartialFlushEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets the minimum number of closed spans in a trace before it's partially flushed
-        /// </summary>
-        public int PartialFlushMinSpans
-        {
-            get => _partialFlushMinSpans;
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentException("The value must be strictly greater than 0", nameof(PartialFlushMinSpans));
-                }
-
-                _partialFlushMinSpans = value;
             }
         }
 
@@ -229,12 +277,12 @@ namespace Datadog.Trace.Configuration
             else if (!string.IsNullOrWhiteSpace(metricsPipeName))
             {
                 MetricsTransport = MetricsTransportType.NamedPipe;
-                MetricsPipeName = metricsPipeName;
+                MetricsPipeNameInternal = metricsPipeName;
             }
             else if (metricsUnixDomainSocketPath != null)
             {
                 MetricsTransport = MetricsTransportType.UDS;
-                MetricsUnixDomainSocketPath = metricsUnixDomainSocketPath;
+                MetricsUnixDomainSocketPathInternal = metricsUnixDomainSocketPath;
 
                 // check if the file exists to warn the user.
                 if (!_fileExists(metricsUnixDomainSocketPath))
@@ -245,15 +293,15 @@ namespace Datadog.Trace.Configuration
             else if (_fileExists(DefaultMetricsUnixDomainSocket))
             {
                 MetricsTransport = MetricsTransportType.UDS;
-                MetricsUnixDomainSocketPath = DefaultMetricsUnixDomainSocket;
+                MetricsUnixDomainSocketPathInternal = DefaultMetricsUnixDomainSocket;
             }
             else
             {
                 MetricsTransport = MetricsTransportType.UDP;
-                DogStatsdPort = DefaultDogstatsdPort;
+                DogStatsdPortInternal = DefaultDogstatsdPort;
             }
 
-            DogStatsdPort = dogStatsdPort > 0 ? dogStatsdPort : DefaultDogstatsdPort;
+            DogStatsdPortInternal = dogStatsdPort > 0 ? dogStatsdPort : DefaultDogstatsdPort;
         }
 
         private void ConfigureTraceTransport(string agentUri, string tracesPipeName, string agentHost, int? agentPort, string tracesUnixDomainSocketPath)
@@ -272,7 +320,7 @@ namespace Datadog.Trace.Configuration
             if (!string.IsNullOrWhiteSpace(tracesPipeName))
             {
                 TracesTransport = TracesTransportType.WindowsNamedPipe;
-                TracesPipeName = tracesPipeName;
+                TracesPipeNameInternal = tracesPipeName;
 
                 // The Uri isn't needed anymore in that case, just populating it for retro compatibility.
                 if (Uri.TryCreate($"http://{agentHost ?? DefaultAgentHost}:{agentPort ?? DefaultAgentPort}", UriKind.Absolute, out var uri))
@@ -339,7 +387,7 @@ namespace Datadog.Trace.Configuration
             if (uri.OriginalString.StartsWith(UnixDomainSocketPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 TracesTransport = TracesTransportType.UnixDomainSocket;
-                TracesUnixDomainSocketPath = uri.PathAndQuery;
+                TracesUnixDomainSocketPathInternal = uri.PathAndQuery;
 
                 var absoluteUri = uri.AbsoluteUri.Replace(UnixDomainSocketPrefix, string.Empty);
                 if (!Path.IsPathRooted(absoluteUri))

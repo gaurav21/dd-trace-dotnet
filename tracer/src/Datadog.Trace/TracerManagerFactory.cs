@@ -192,7 +192,7 @@ namespace Datadog.Trace
         protected virtual IAgentWriter GetAgentWriter(ImmutableTracerSettings settings, IDogStatsd statsd, ITraceSampler sampler, IDiscoveryService discoveryService)
         {
             var apiRequestFactory = TracesTransportStrategy.Get(settings.Exporter);
-            var api = new Api(apiRequestFactory, statsd, rates => sampler.SetDefaultSampleRates(rates), settings.Exporter.PartialFlushEnabled);
+            var api = new Api(apiRequestFactory, statsd, rates => sampler.SetDefaultSampleRates(rates), settings.Exporter.PartialFlushEnabledInternal);
 
             var statsAggregator = StatsAggregator.Create(api, settings, discoveryService);
 
@@ -246,7 +246,7 @@ namespace Datadog.Trace
                         Log.Information("Using unix domain sockets for metrics transport.");
                         statsd.Configure(new StatsdConfig
                         {
-                            StatsdServerName = $"{ExporterSettings.UnixDomainSocketPrefix}{settings.Exporter.MetricsUnixDomainSocketPath}",
+                            StatsdServerName = $"{ExporterSettings.UnixDomainSocketPrefix}{settings.Exporter.MetricsUnixDomainSocketPathInternal}",
                             ConstantTags = constantTags.ToArray()
                         });
                         break;
@@ -255,8 +255,8 @@ namespace Datadog.Trace
                     default:
                         statsd.Configure(new StatsdConfig
                         {
-                            StatsdServerName = settings.Exporter.AgentUri.DnsSafeHost,
-                            StatsdPort = settings.Exporter.DogStatsdPort,
+                            StatsdServerName = settings.Exporter.AgentUriInternal.DnsSafeHost,
+                            StatsdPort = settings.Exporter.DogStatsdPortInternal,
                             ConstantTags = constantTags.ToArray()
                         });
                         break;

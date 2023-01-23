@@ -298,7 +298,7 @@ namespace Datadog.Trace.Tools.Runner
             using (cts.Token.Register(
                        () =>
                        {
-                           WriteError($"Error connecting to the Datadog Agent at {tracerSettings.Exporter.AgentUri}.");
+                           WriteError($"Error connecting to the Datadog Agent at {tracerSettings.Exporter.AgentUriInternal}.");
                            tcs.TrySetResult(null);
                        }))
             {

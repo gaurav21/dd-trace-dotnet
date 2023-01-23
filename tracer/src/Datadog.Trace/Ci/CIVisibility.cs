@@ -70,7 +70,7 @@ namespace Datadog.Trace.Ci
                 if (!_settings.ForceAgentsEvpProxy)
                 {
                     discoveryService = DiscoveryService.Create(
-                        new ImmutableExporterSettings(_settings.TracerSettings.Exporter),
+                        new ImmutableExporterSettings(_settings.TracerSettings.Exporter, true),
                         tcpTimeout: TimeSpan.FromSeconds(5),
                         initialRetryDelayMs: 10,
                         maxRetryDelayMs: 1000,
@@ -287,10 +287,10 @@ namespace Datadog.Trace.Ci
 
 #if NETCOREAPP
             Log.Information("Using {FactoryType} for trace transport.", nameof(HttpClientRequestFactory));
-            factory = new HttpClientRequestFactory(settings.Exporter.AgentUri, AgentHttpHeaderNames.DefaultHeaders, timeout: timeout);
+            factory = new HttpClientRequestFactory(settings.Exporter.AgentUriInternal, AgentHttpHeaderNames.DefaultHeaders, timeout: timeout);
 #else
             Log.Information("Using {FactoryType} for trace transport.", nameof(ApiWebRequestFactory));
-            factory = new ApiWebRequestFactory(settings.Exporter.AgentUri, AgentHttpHeaderNames.DefaultHeaders, timeout: timeout);
+            factory = new ApiWebRequestFactory(settings.Exporter.AgentUriInternal, AgentHttpHeaderNames.DefaultHeaders, timeout: timeout);
 #endif
 
             if (!string.IsNullOrWhiteSpace(_settings.ProxyHttps))
