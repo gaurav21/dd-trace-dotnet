@@ -30,7 +30,7 @@ namespace Datadog.Trace.Ci
                 new Trace.Processors.NormalizerTraceProcessor(),
                 new Trace.Processors.TruncatorTraceProcessor(),
                 new Processors.TestSuiteVisibilityProcessor(agentWriter is CIVisibilityProtocolWriter),
-                new Processors.OriginTagTraceProcessor(settings.Exporter.PartialFlushEnabledInternal, agentWriter is CIVisibilityProtocolWriter),
+                new Processors.OriginTagTraceProcessor(settings.ExporterInternal.PartialFlushEnabledInternal, agentWriter is CIVisibilityProtocolWriter),
             })
         {
         }

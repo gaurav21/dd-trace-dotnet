@@ -62,7 +62,7 @@ namespace Datadog.Trace
             {
                 if (Profiler.Instance.Status.IsProfilerReady)
                 {
-                    NativeInterop.SetApplicationInfoForAppDomain(RuntimeId.Get(), tracer.DefaultServiceName, tracer.Settings.Environment, tracer.Settings.ServiceVersion);
+                    NativeInterop.SetApplicationInfoForAppDomain(RuntimeId.Get(), tracer.DefaultServiceName, tracer.Settings.EnvironmentInternal, tracer.Settings.ServiceVersionInternal);
                 }
             }
             catch (Exception ex)
@@ -92,15 +92,15 @@ namespace Datadog.Trace
             IDiscoveryService discoveryService,
             DataStreamsManager dataStreamsManager)
         {
-            settings ??= ImmutableTracerSettings.FromDefaultSources();
+            settings ??= ImmutableTracerSettings.FromDefaultSourcesInternal();
 
-            var defaultServiceName = settings.ServiceName ??
+            var defaultServiceName = settings.ServiceNameInternal ??
                                      GetApplicationName(settings) ??
                                      UnknownServiceName;
 
             discoveryService ??= GetDiscoveryService(settings);
 
-            statsd = settings.TracerMetricsEnabled
+            statsd = settings.TracerMetricsEnabledInternal
                          ? (statsd ?? CreateDogStatsdClient(settings, defaultServiceName))
                          : null;
             sampler ??= GetSampler(settings);
@@ -116,8 +116,8 @@ namespace Datadog.Trace
                 logSubmissionManager,
                 settings.LogSubmissionSettings,
                 defaultServiceName,
-                settings.Environment,
-                settings.ServiceVersion);
+                settings.EnvironmentInternal,
+                settings.ServiceVersionInternal);
 
             telemetry ??= TelemetryFactory.CreateTelemetryController(settings);
             telemetry.RecordTracerSettings(settings, defaultServiceName);
@@ -152,23 +152,23 @@ namespace Datadog.Trace
 
         protected virtual ITraceSampler GetSampler(ImmutableTracerSettings settings)
         {
-            var sampler = new TraceSampler(new TracerRateLimiter(settings.MaxTracesSubmittedPerSecond));
+            var sampler = new TraceSampler(new TracerRateLimiter(settings.MaxTracesSubmittedPerSecondInternal));
 
-            if (!string.IsNullOrWhiteSpace(settings.CustomSamplingRules))
+            if (!string.IsNullOrWhiteSpace(settings.CustomSamplingRulesInternal))
             {
-                foreach (var rule in CustomSamplingRule.BuildFromConfigurationString(settings.CustomSamplingRules))
+                foreach (var rule in CustomSamplingRule.BuildFromConfigurationString(settings.CustomSamplingRulesInternal))
                 {
                     sampler.RegisterRule(rule);
                 }
             }
 
-            if (settings.GlobalSamplingRate != null)
+            if (settings.GlobalSamplingRateInternal != null)
             {
-                var globalRate = (float)settings.GlobalSamplingRate;
+                var globalRate = (float)settings.GlobalSamplingRateInternal;
 
                 if (globalRate < 0f || globalRate > 1f)
                 {
-                    Log.Warning("{ConfigurationKey} configuration of {ConfigurationValue} is out of range", ConfigurationKeys.GlobalSamplingRate, settings.GlobalSamplingRate);
+                    Log.Warning("{ConfigurationKey} configuration of {ConfigurationValue} is out of range", ConfigurationKeys.GlobalSamplingRate, settings.GlobalSamplingRateInternal);
                 }
                 else
                 {
@@ -191,8 +191,8 @@ namespace Datadog.Trace
 
         protected virtual IAgentWriter GetAgentWriter(ImmutableTracerSettings settings, IDogStatsd statsd, ITraceSampler sampler, IDiscoveryService discoveryService)
         {
-            var apiRequestFactory = TracesTransportStrategy.Get(settings.Exporter);
-            var api = new Api(apiRequestFactory, statsd, rates => sampler.SetDefaultSampleRates(rates), settings.Exporter.PartialFlushEnabledInternal);
+            var apiRequestFactory = TracesTransportStrategy.Get(settings.ExporterInternal);
+            var api = new Api(apiRequestFactory, statsd, rates => sampler.SetDefaultSampleRates(rates), settings.ExporterInternal.PartialFlushEnabledInternal);
 
             var statsAggregator = StatsAggregator.Create(api, settings, discoveryService);
 
@@ -202,7 +202,7 @@ namespace Datadog.Trace
         }
 
         protected virtual IDiscoveryService GetDiscoveryService(ImmutableTracerSettings settings)
-            => DiscoveryService.Create(settings.Exporter);
+            => DiscoveryService.Create(settings.ExporterInternal);
 
         private static IDogStatsd CreateDogStatsdClient(ImmutableTracerSettings settings, string serviceName)
         {
@@ -218,18 +218,18 @@ namespace Datadog.Trace
                                        $"{Tags.RuntimeId}:{Tracer.RuntimeId}"
                                    };
 
-                if (settings.Environment != null)
+                if (settings.EnvironmentInternal != null)
                 {
-                    constantTags.Add($"env:{settings.Environment}");
+                    constantTags.Add($"env:{settings.EnvironmentInternal}");
                 }
 
-                if (settings.ServiceVersion != null)
+                if (settings.ServiceVersionInternal != null)
                 {
-                    constantTags.Add($"version:{settings.ServiceVersion}");
+                    constantTags.Add($"version:{settings.ServiceVersionInternal}");
                 }
 
                 var statsd = new DogStatsdService();
-                switch (settings.Exporter.MetricsTransport)
+                switch (settings.ExporterInternal.MetricsTransport)
                 {
                     case MetricsTransportType.NamedPipe:
                         // Environment variables for windows named pipes are not explicitly passed to statsd.
@@ -246,7 +246,7 @@ namespace Datadog.Trace
                         Log.Information("Using unix domain sockets for metrics transport.");
                         statsd.Configure(new StatsdConfig
                         {
-                            StatsdServerName = $"{ExporterSettings.UnixDomainSocketPrefix}{settings.Exporter.MetricsUnixDomainSocketPathInternal}",
+                            StatsdServerName = $"{ExporterSettings.UnixDomainSocketPrefix}{settings.ExporterInternal.MetricsUnixDomainSocketPathInternal}",
                             ConstantTags = constantTags.ToArray()
                         });
                         break;
@@ -255,8 +255,8 @@ namespace Datadog.Trace
                     default:
                         statsd.Configure(new StatsdConfig
                         {
-                            StatsdServerName = settings.Exporter.AgentUriInternal.DnsSafeHost,
-                            StatsdPort = settings.Exporter.DogStatsdPortInternal,
+                            StatsdServerName = settings.ExporterInternal.AgentUriInternal.DnsSafeHost,
+                            StatsdPort = settings.ExporterInternal.DogStatsdPortInternal,
                             ConstantTags = constantTags.ToArray()
                         });
                         break;

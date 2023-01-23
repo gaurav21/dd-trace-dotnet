@@ -36,7 +36,7 @@ internal class LiveDebuggerFactory
         var probeStatusSink = ProbeStatusSink.Create(serviceName, settings);
 
         var apiFactory = AgentTransportStrategy.Get(
-            tracerSettings.Exporter,
+            tracerSettings.ExporterInternal,
             productName: "debugger",
             tcpTimeout: TimeSpan.FromSeconds(15),
             AgentHttpHeaderNames.MinimalHeaders,
@@ -50,7 +50,7 @@ internal class LiveDebuggerFactory
         var lineProbeResolver = LineProbeResolver.Create();
         var probeStatusPoller = ProbeStatusPoller.Create(probeStatusSink, settings);
 
-        var configurationUpdater = ConfigurationUpdater.Create(tracerSettings.Environment, tracerSettings.ServiceVersion);
+        var configurationUpdater = ConfigurationUpdater.Create(tracerSettings.EnvironmentInternal, tracerSettings.ServiceVersionInternal);
         return LiveDebugger.Create(settings, serviceName, discoveryService, remoteConfigurationManager, lineProbeResolver, debuggerSink, probeStatusPoller, configurationUpdater);
     }
 }

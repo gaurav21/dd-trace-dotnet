@@ -284,7 +284,7 @@ namespace Datadog.Trace.Tools.Runner
             var settings = tracerSettings.BuildInternal();
 
             var discoveryService = DiscoveryService.Create(
-                settings.Exporter,
+                settings.ExporterInternal,
                 tcpTimeout: TimeSpan.FromSeconds(5),
                 initialRetryDelayMs: 10,
                 maxRetryDelayMs: 1000,

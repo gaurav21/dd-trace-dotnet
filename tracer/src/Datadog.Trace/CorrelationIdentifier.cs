@@ -43,7 +43,7 @@ namespace Datadog.Trace
         {
             get
             {
-                return Tracer.Instance.Settings.ServiceVersion ?? string.Empty;
+                return Tracer.Instance.Settings.ServiceVersionInternal ?? string.Empty;
             }
         }
 
@@ -54,7 +54,7 @@ namespace Datadog.Trace
         {
             get
             {
-                return Tracer.Instance.Settings.Environment ?? string.Empty;
+                return Tracer.Instance.Settings.EnvironmentInternal ?? string.Empty;
             }
         }
 

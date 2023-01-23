@@ -50,7 +50,7 @@ internal class DataStreamsManager
                          ? DataStreamsWriter.Create(settings, discoveryService, defaultServiceName)
                          : null;
 
-        return new DataStreamsManager(settings.Environment, defaultServiceName, writer);
+        return new DataStreamsManager(settings.EnvironmentInternal, defaultServiceName, writer);
     }
 
     public async Task DisposeAsync()

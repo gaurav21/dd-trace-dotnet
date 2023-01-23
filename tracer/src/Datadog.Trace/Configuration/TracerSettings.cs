@@ -715,7 +715,7 @@ namespace Datadog.Trace.Configuration
 
         internal ImmutableTracerSettings BuildInternal()
         {
-            return new ImmutableTracerSettings(this);
+            return new ImmutableTracerSettings(this, true);
         }
 
         private static IDictionary<string, string> InitializeHeaderTags(IDictionary<string, string> configurationDictionary, bool headerTagsNormalizationFixEnabled)

@@ -75,7 +75,7 @@ namespace Datadog.Trace.PlatformHelpers
         {
             var settings = tracer.Settings;
 
-            if (!settings.HeaderTags.IsNullOrEmpty())
+            if (!settings.HeaderTagsInternal.IsNullOrEmpty())
             {
                 try
                 {
@@ -84,7 +84,7 @@ namespace Datadog.Trace.PlatformHelpers
 
                     if (requestHeaders != null)
                     {
-                        return SpanContextPropagator.Instance.ExtractHeaderTags(new HeadersCollectionAdapter(requestHeaders), settings.HeaderTags, defaultTagPrefix: SpanContextPropagator.HttpRequestHeadersTagPrefix);
+                        return SpanContextPropagator.Instance.ExtractHeaderTags(new HeadersCollectionAdapter(requestHeaders), settings.HeaderTagsInternal, defaultTagPrefix: SpanContextPropagator.HttpRequestHeadersTagPrefix);
                     }
                 }
                 catch (Exception ex)

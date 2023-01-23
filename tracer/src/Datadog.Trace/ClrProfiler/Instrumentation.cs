@@ -437,7 +437,7 @@ namespace Datadog.Trace.ClrProfiler
         private static void InitRemoteConfigurationManagement(Tracer tracer)
         {
             // Service Name must be lowercase, otherwise the agent will not be able to find the service
-            var serviceName = TraceUtil.NormalizeTag(tracer.Settings.ServiceName ?? tracer.DefaultServiceName);
+            var serviceName = TraceUtil.NormalizeTag(tracer.Settings.ServiceNameInternal ?? tracer.DefaultServiceName);
             var discoveryService = tracer.TracerManager.DiscoveryService;
 
             Task.Run(
@@ -453,10 +453,10 @@ namespace Datadog.Trace.ClrProfiler
                     if (isDiscoverySuccessful)
                     {
                         var rcmSettings = RemoteConfigurationSettings.FromDefaultSource();
-                        var rcmApi = RemoteConfigurationApiFactory.Create(tracer.Settings.Exporter, rcmSettings, discoveryService);
+                        var rcmApi = RemoteConfigurationApiFactory.Create(tracer.Settings.ExporterInternal, rcmSettings, discoveryService);
                         var tags = GetTags(tracer, rcmSettings);
 
-                        var configurationManager = RemoteConfigurationManager.Create(discoveryService, rcmApi, rcmSettings, serviceName, TraceUtil.NormalizeTag(tracer.Settings.Environment), tracer.Settings.ServiceVersion, tags);
+                        var configurationManager = RemoteConfigurationManager.Create(discoveryService, rcmApi, rcmSettings, serviceName, TraceUtil.NormalizeTag(tracer.Settings.EnvironmentInternal), tracer.Settings.ServiceVersionInternal, tags);
                         // see comment above
                         configurationManager.RegisterProduct(AsmRemoteConfigurationProducts.AsmFeaturesProduct);
                         configurationManager.RegisterProduct(AsmRemoteConfigurationProducts.AsmDataProduct);
@@ -478,15 +478,15 @@ namespace Datadog.Trace.ClrProfiler
 
         private static List<string> GetTags(Tracer tracer, RemoteConfigurationSettings rcmSettings)
         {
-            var tags = tracer.Settings.GlobalTags?.Select(pair => pair.Key + ":" + pair.Value).ToList() ?? new List<string>();
+            var tags = tracer.Settings.GlobalTagsInternal?.Select(pair => pair.Key + ":" + pair.Value).ToList() ?? new List<string>();
 
-            var environment = TraceUtil.NormalizeTag(tracer.Settings.Environment);
+            var environment = TraceUtil.NormalizeTag(tracer.Settings.EnvironmentInternal);
             if (!string.IsNullOrEmpty(environment))
             {
                 tags.Add($"env:{environment}");
             }
 
-            var serviceVersion = tracer.Settings.ServiceVersion;
+            var serviceVersion = tracer.Settings.ServiceVersionInternal;
             if (!string.IsNullOrEmpty(serviceVersion))
             {
                 tags.Add($"version:{serviceVersion}");

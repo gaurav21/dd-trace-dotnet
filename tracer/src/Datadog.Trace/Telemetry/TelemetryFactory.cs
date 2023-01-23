@@ -27,7 +27,7 @@ namespace Datadog.Trace.Telemetry
             {
                 try
                 {
-                    var telemetryTransports = TelemetryTransportFactory.Create(settings, tracerSettings.Exporter);
+                    var telemetryTransports = TelemetryTransportFactory.Create(settings, tracerSettings.ExporterInternal);
 
                     if (telemetryTransports.Length == 0)
                     {
