@@ -2,10 +2,6 @@
 
 namespace Datadog.Trace
 {
-    public sealed class AgentProcessManagerLoader
-    {
-        public AgentProcessManagerLoader() { }
-    }
     public static class CorrelationIdentifier
     {
         public static string Env { get; }
@@ -279,13 +275,6 @@ namespace Datadog.Trace.Ci
         public void SetErrorInfo(string type, string message, string? callStack) { }
         public void SetTag(string key, double? value) { }
         public void SetTag(string key, string? value) { }
-    }
-}
-namespace Datadog.Trace.ClrProfiler
-{
-    public sealed class InstrumentationLoader
-    {
-        public InstrumentationLoader() { }
     }
 }
 namespace Datadog.Trace.Configuration
