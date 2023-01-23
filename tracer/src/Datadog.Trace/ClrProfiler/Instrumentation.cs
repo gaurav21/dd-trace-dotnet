@@ -6,10 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Datadog.Trace.Agent;
 using Datadog.Trace.Agent.DiscoveryService;
 using Datadog.Trace.AppSec;
 using Datadog.Trace.Ci;
@@ -23,6 +23,7 @@ using Datadog.Trace.Processors;
 using Datadog.Trace.RemoteConfigurationManagement;
 using Datadog.Trace.RemoteConfigurationManagement.Transport;
 using Datadog.Trace.ServiceFabric;
+using Datadog.Trace.Telemetry.Metrics;
 
 namespace Datadog.Trace.ClrProfiler
 {
@@ -88,8 +89,10 @@ namespace Datadog.Trace.ClrProfiler
 
             TracerDebugger.WaitForDebugger();
 
+            var swTotal = new Stopwatch();
             Log.Debug("Initialization started.");
 
+            var sw = new Stopwatch();
             try
             {
                 Log.Debug("Enabling by ref instrumentation.");
@@ -101,6 +104,9 @@ namespace Datadog.Trace.ClrProfiler
                 Log.Error(ex, "ByRef instrumentation cannot be enabled: ");
             }
 
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_ByRefPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
+
             try
             {
                 Log.Debug("Enabling calltarget state by ref.");
@@ -111,6 +117,9 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Error(ex, "CallTarget state ByRef cannot be enabled: ");
             }
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_CallTargetStateByRefPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
 
             try
             {
@@ -124,8 +133,14 @@ namespace Datadog.Trace.ClrProfiler
                 Log.Error(ex, ex.Message);
             }
 
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_TraceAttributesPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
+
             InitializeNoNativeParts();
             var tracer = Tracer.Instance;
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_Managed, sw.ElapsedMilliseconds);
+            sw.Restart();
 
             try
             {
@@ -140,6 +155,9 @@ namespace Datadog.Trace.ClrProfiler
                 Log.Error(ex, ex.Message);
             }
 
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_CallTargetDefsPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
+
             try
             {
                 Serverless.InitIfNeeded();
@@ -148,6 +166,9 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Serverless.Error("Error while loading Serverless definitions", ex);
             }
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_Serverless, sw.ElapsedMilliseconds);
+            sw.Restart();
 
             try
             {
@@ -162,6 +183,9 @@ namespace Datadog.Trace.ClrProfiler
                 Log.Error(ex, ex.Message);
             }
 
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_CallTargetDerivedDefsPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
+
             try
             {
                 Log.Debug("Sending CallTarget interface integration definitions to native library.");
@@ -174,6 +198,9 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Error(ex, ex.Message);
             }
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_CallTargetInterfaceDefsPinvoke, sw.ElapsedMilliseconds);
+            sw.Restart();
 
             if (tracer is null)
             {
@@ -190,6 +217,10 @@ namespace Datadog.Trace.ClrProfiler
                     Log.Error(e, "Failed to initialize Remote Configuration Management.");
                 }
 
+                // RCM isn't _actually_ initialized at this point, as we do it in the background, so prob no value in recording this here
+                // TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_Rcm, sw.ElapsedMilliseconds);
+                sw.Restart();
+
                 try
                 {
                     Log.Debug("Initializing TraceMethods instrumentation.");
@@ -202,6 +233,9 @@ namespace Datadog.Trace.ClrProfiler
                 {
                     Log.Error(ex, ex.Message);
                 }
+
+                TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_TraceMethodsPinvoke, sw.ElapsedMilliseconds);
+                sw.Restart();
             }
 
             if (!Iast.Iast.Instance.Settings.Enabled)
@@ -254,6 +288,8 @@ namespace Datadog.Trace.ClrProfiler
             LifetimeManager.Instance.AddShutdownTask(RunShutdown);
 
             Log.Debug("Initialization finished.");
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Total, swTotal.ElapsedMilliseconds);
         }
 
         private static void RunShutdown()
@@ -409,7 +445,11 @@ namespace Datadog.Trace.ClrProfiler
                 {
                     // TODO: RCM and LiveDebugger should be initialized in TracerManagerFactory so they can respond
                     // to changes in ExporterSettings etc.
+
+                    var sw = new Stopwatch();
                     var isDiscoverySuccessful = await WaitForDiscoveryService(discoveryService).ConfigureAwait(false);
+                    TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_DiscoveryService, sw.ElapsedMilliseconds);
+
                     if (isDiscoverySuccessful)
                     {
                         var rcmSettings = RemoteConfigurationSettings.FromDefaultSource();
@@ -485,6 +525,7 @@ namespace Datadog.Trace.ClrProfiler
 
         internal static async Task InitializeRemoteConfigurationManager(IRemoteConfigurationManager remoteConfigurationManager)
         {
+            var sw = new Stopwatch();
             try
             {
                 await remoteConfigurationManager.StartPollingAsync().ConfigureAwait(false);
@@ -493,10 +534,13 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Error(ex, "Failed to initialize Remote Configuration management.");
             }
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_RCM, sw.ElapsedMilliseconds);
         }
 
         internal static async Task InitializeLiveDebugger(LiveDebugger liveDebugger)
         {
+            var sw = new Stopwatch();
             try
             {
                 await liveDebugger.InitializeAsync().ConfigureAwait(false);
@@ -505,6 +549,8 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Error(ex, "Failed to initialize Live Debugger");
             }
+
+            TelemetryMetrics.Instance.Record(Distribution.InitTime, MetricTags.Component_DynamicInstrumentation, sw.ElapsedMilliseconds);
         }
     }
 }

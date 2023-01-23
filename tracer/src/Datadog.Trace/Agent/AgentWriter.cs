@@ -13,6 +13,7 @@ using Datadog.Trace.DogStatsd;
 using Datadog.Trace.Logging;
 using Datadog.Trace.Sampling;
 using Datadog.Trace.Tagging;
+using Datadog.Trace.Telemetry.Metrics;
 using Datadog.Trace.Vendors.StatsdClient;
 
 namespace Datadog.Trace.Agent
@@ -342,12 +343,14 @@ namespace Datadog.Trace.Agent
 
                         var success = await _api.SendTracesAsync(buffer.Data, buffer.TraceCount, CanComputeStats, droppedP0Traces, droppedP0Spans).ConfigureAwait(false);
 
+                        TelemetryMetrics.Instance.Record(Count.TraceSent, buffer.TraceCount);
                         if (success)
                         {
                             _traceKeepRateCalculator.IncrementKeeps(buffer.TraceCount);
                         }
                         else
                         {
+                            TelemetryMetrics.Instance.Record(Count.TraceDropped, buffer.TraceCount);
                             _traceKeepRateCalculator.IncrementDrops(buffer.TraceCount);
                         }
                     }
@@ -481,6 +484,7 @@ namespace Datadog.Trace.Agent
             // All the buffers are full :( drop the trace
             Interlocked.Increment(ref _droppedSpans);
             _traceKeepRateCalculator.IncrementDrops(1);
+            TelemetryMetrics.Instance.Record(Count.TraceDropped, MetricTags.DropReason_OverfullBuffer);
 
             if (_statsd != null)
             {
