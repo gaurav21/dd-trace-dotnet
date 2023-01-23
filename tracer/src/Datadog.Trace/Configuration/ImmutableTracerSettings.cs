@@ -26,7 +26,7 @@ namespace Datadog.Trace.Configuration
         /// </summary>
         /// <param name="source">The <see cref="IConfigurationSource"/> to use when retrieving configuration values.</param>
         public ImmutableTracerSettings(IConfigurationSource source)
-            : this(new TracerSettings(source))
+            : this(new TracerSettings(source, true))
         {
         }
 
@@ -38,13 +38,13 @@ namespace Datadog.Trace.Configuration
         public ImmutableTracerSettings(TracerSettings settings)
         {
             // DD_ENV has precedence over DD_TAGS
-            if (!string.IsNullOrWhiteSpace(settings.Environment))
+            if (!string.IsNullOrWhiteSpace(settings.EnvironmentInternal))
             {
-                Environment = settings.Environment.Trim();
+                Environment = settings.EnvironmentInternal.Trim();
             }
             else
             {
-                var env = settings.GlobalTags.GetValueOrDefault(Tags.Env);
+                var env = settings.GlobalTagsInternal.GetValueOrDefault(Tags.Env);
 
                 if (!string.IsNullOrWhiteSpace(env))
                 {
@@ -53,13 +53,13 @@ namespace Datadog.Trace.Configuration
             }
 
             // DD_VERSION has precedence over DD_TAGS
-            if (!string.IsNullOrWhiteSpace(settings.ServiceVersion))
+            if (!string.IsNullOrWhiteSpace(settings.ServiceVersionInternal))
             {
-                ServiceVersion = settings.ServiceVersion.Trim();
+                ServiceVersion = settings.ServiceVersionInternal.Trim();
             }
             else
             {
-                var version = settings.GlobalTags.GetValueOrDefault(Tags.Version);
+                var version = settings.GlobalTagsInternal.GetValueOrDefault(Tags.Version);
 
                 if (!string.IsNullOrWhiteSpace(version))
                 {
@@ -70,33 +70,33 @@ namespace Datadog.Trace.Configuration
             // create dictionary copy without "env" or "version",
             // these value are used for "Environment" and "ServiceVersion"
             // or overriden with DD_ENV and DD_VERSION
-            var globalTags = settings.GlobalTags
+            var globalTags = settings.GlobalTagsInternal
                                      .Where(kvp => kvp.Key is not (Tags.Env or Tags.Version))
                                      .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             GlobalTags = new ReadOnlyDictionary<string, string>(globalTags);
 
-            ServiceName = settings.ServiceName;
-            TraceEnabled = settings.TraceEnabled;
-            Exporter = new ImmutableExporterSettings(settings.Exporter, true);
+            ServiceName = settings.ServiceNameInternal;
+            TraceEnabled = settings.TraceEnabledInternal;
+            Exporter = new ImmutableExporterSettings(settings.ExporterInternal, true);
 #pragma warning disable 618 // App analytics is deprecated, but still used
-            AnalyticsEnabled = settings.AnalyticsEnabled;
+            AnalyticsEnabled = settings.AnalyticsEnabledInternal;
 #pragma warning restore 618
-            MaxTracesSubmittedPerSecond = settings.MaxTracesSubmittedPerSecond;
-            CustomSamplingRules = settings.CustomSamplingRules;
+            MaxTracesSubmittedPerSecond = settings.MaxTracesSubmittedPerSecondInternal;
+            CustomSamplingRules = settings.CustomSamplingRulesInternal;
             SpanSamplingRules = settings.SpanSamplingRules;
-            GlobalSamplingRate = settings.GlobalSamplingRate;
-            Integrations = new ImmutableIntegrationSettingsCollection(settings.Integrations, settings.DisabledIntegrationNames);
-            HeaderTags = new ReadOnlyDictionary<string, string>(settings.HeaderTags);
-            GrpcTags = new ReadOnlyDictionary<string, string>(settings.GrpcTags);
+            GlobalSamplingRate = settings.GlobalSamplingRateInternal;
+            Integrations = new ImmutableIntegrationSettingsCollection(settings.IntegrationsInternal, settings.DisabledIntegrationNamesInternal);
+            HeaderTags = new ReadOnlyDictionary<string, string>(settings.HeaderTagsInternal);
+            GrpcTags = new ReadOnlyDictionary<string, string>(settings.GrpcTagsInternal);
             IpHeader = settings.IpHeader;
             IpHeaderEnabled = settings.IpHeaderEnabled;
-            TracerMetricsEnabled = settings.TracerMetricsEnabled;
-            StatsComputationEnabled = settings.StatsComputationEnabled;
+            TracerMetricsEnabled = settings.TracerMetricsEnabledInternal;
+            StatsComputationEnabled = settings.StatsComputationEnabledInternal;
             StatsComputationInterval = settings.StatsComputationInterval;
             RuntimeMetricsEnabled = settings.RuntimeMetricsEnabled;
-            KafkaCreateConsumerScopeEnabled = settings.KafkaCreateConsumerScopeEnabled;
-            StartupDiagnosticLogEnabled = settings.StartupDiagnosticLogEnabled;
+            KafkaCreateConsumerScopeEnabled = settings.KafkaCreateConsumerScopeEnabledInternal;
+            StartupDiagnosticLogEnabled = settings.StartupDiagnosticLogEnabledInternal;
             HttpClientExcludedUrlSubstrings = settings.HttpClientExcludedUrlSubstrings;
             HttpServerErrorStatusCodes = settings.HttpServerErrorStatusCodes;
             HttpClientErrorStatusCodes = settings.HttpClientErrorStatusCodes;

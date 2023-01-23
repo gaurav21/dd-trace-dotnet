@@ -26,17 +26,17 @@ namespace Datadog.Trace.OpenTracing
         {
             // Keep supporting this older public method by creating a TracerConfiguration
             // from default sources, overwriting the specified settings, and passing that to the constructor.
-            var configuration = TracerSettings.FromDefaultSources();
+            var configuration = TracerSettings.FromDefaultSourcesInternal();
             GlobalSettings.SetDebugEnabledInternal(isDebugEnabled);
 
             if (agentEndpoint != null)
             {
-                configuration.Exporter.AgentUriInternal = agentEndpoint;
+                configuration.ExporterInternal.AgentUriInternal = agentEndpoint;
             }
 
             if (defaultServiceName != null)
             {
-                configuration.ServiceName = defaultServiceName;
+                configuration.ServiceNameInternal = defaultServiceName;
             }
 
             Tracer.ConfigureInternal(configuration);

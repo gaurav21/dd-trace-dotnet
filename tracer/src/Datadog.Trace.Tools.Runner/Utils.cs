@@ -280,8 +280,8 @@ namespace Datadog.Trace.Tools.Runner
                 new NameValueConfigurationSource(env, true)
             };
 
-            var tracerSettings = new TracerSettings(configurationSource);
-            var settings = tracerSettings.Build();
+            var tracerSettings = new TracerSettings(configurationSource, true);
+            var settings = tracerSettings.BuildInternal();
 
             var discoveryService = DiscoveryService.Create(
                 settings.Exporter,
@@ -298,7 +298,7 @@ namespace Datadog.Trace.Tools.Runner
             using (cts.Token.Register(
                        () =>
                        {
-                           WriteError($"Error connecting to the Datadog Agent at {tracerSettings.Exporter.AgentUriInternal}.");
+                           WriteError($"Error connecting to the Datadog Agent at {tracerSettings.ExporterInternal.AgentUriInternal}.");
                            tcs.TrySetResult(null);
                        }))
             {

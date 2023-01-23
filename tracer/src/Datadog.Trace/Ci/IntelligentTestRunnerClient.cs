@@ -69,17 +69,17 @@ internal class IntelligentTestRunnerClient
         _settings = settings ?? CIVisibility.Settings;
 
         _workingDirectory = workingDirectory;
-        _environment = TraceUtil.NormalizeTag(_settings.TracerSettings.Environment ?? "none") ?? "none";
-        _serviceName = NormalizerTraceProcessor.NormalizeService(_settings.TracerSettings.ServiceName) ?? string.Empty;
+        _environment = TraceUtil.NormalizeTag(_settings.TracerSettings.EnvironmentInternal ?? "none") ?? "none";
+        _serviceName = NormalizerTraceProcessor.NormalizeService(_settings.TracerSettings.ServiceNameInternal) ?? string.Empty;
         _customConfigurations = null;
 
         // Extract custom tests configurations from DD_TAGS
-        _customConfigurations = GetCustomTestsConfigurations(_settings.TracerSettings.GlobalTags);
+        _customConfigurations = GetCustomTestsConfigurations(_settings.TracerSettings.GlobalTagsInternal);
 
         _getRepositoryUrlTask = GetRepositoryUrlAsync();
         _getBranchNameTask = GetBranchNameAsync();
         _getShaTask = ProcessHelpers.RunCommandAsync(new ProcessHelpers.Command("git", "rev-parse HEAD", _workingDirectory));
-        _apiRequestFactory = CIVisibility.GetRequestFactory(_settings.TracerSettings.Build(), TimeSpan.FromSeconds(45));
+        _apiRequestFactory = CIVisibility.GetRequestFactory(_settings.TracerSettings.BuildInternal(), TimeSpan.FromSeconds(45));
 
         const string settingsUrlPath = "api/v2/libraries/tests/services/setting";
         const string searchCommitsUrlPath = "api/v2/git/repository/search_commits";
@@ -128,7 +128,7 @@ internal class IntelligentTestRunnerClient
         {
             // Use Agent EVP Proxy
             _useEvpProxy = true;
-            var agentUrl = _settings.TracerSettings.Exporter.AgentUriInternal;
+            var agentUrl = _settings.TracerSettings.ExporterInternal.AgentUriInternal;
             _settingsUrl = UriHelpers.Combine(agentUrl, $"evp_proxy/v2/{settingsUrlPath}");
             _searchCommitsUrl = UriHelpers.Combine(agentUrl, $"evp_proxy/v2/{searchCommitsUrlPath}");
             _packFileUrl = UriHelpers.Combine(agentUrl, $"evp_proxy/v2/{packFileUrlPath}");

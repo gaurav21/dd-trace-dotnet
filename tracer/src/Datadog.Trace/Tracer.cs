@@ -85,7 +85,7 @@ namespace Datadog.Trace
         /// The <see cref="TracerManager"/> created will be scoped specifically to this instance.
         /// </summary>
         internal Tracer(TracerSettings settings, IAgentWriter agentWriter, ITraceSampler sampler, IScopeManager scopeManager, IDogStatsd statsd, ITelemetryController telemetry = null, IDiscoveryService discoveryService = null)
-            : this(TracerManagerFactory.Instance.CreateTracerManager(settings?.Build(), agentWriter, sampler, scopeManager, statsd, runtimeMetrics: null, logSubmissionManager: null, telemetry: telemetry ?? NullTelemetryController.Instance, discoveryService ?? NullDiscoveryService.Instance, dataStreamsManager: null))
+            : this(TracerManagerFactory.Instance.CreateTracerManager(settings?.BuildInternal(), agentWriter, sampler, scopeManager, statsd, runtimeMetrics: null, logSubmissionManager: null, telemetry: telemetry ?? NullTelemetryController.Instance, discoveryService ?? NullDiscoveryService.Instance, dataStreamsManager: null))
         {
         }
 
@@ -341,7 +341,7 @@ namespace Datadog.Trace
 
         internal static void ConfigureInternal(TracerSettings settings)
         {
-            TracerManager.ReplaceGlobalManager(settings?.Build(), TracerManagerFactory.Instance);
+            TracerManager.ReplaceGlobalManager(settings?.BuildInternal(), TracerManagerFactory.Instance);
         }
 
         /// <summary>

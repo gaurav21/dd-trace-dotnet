@@ -70,7 +70,7 @@ namespace Datadog.Trace.Ci
                 if (!_settings.ForceAgentsEvpProxy)
                 {
                     discoveryService = DiscoveryService.Create(
-                        new ImmutableExporterSettings(_settings.TracerSettings.Exporter, true),
+                        new ImmutableExporterSettings(_settings.TracerSettings.ExporterInternal, true),
                         tcpTimeout: TimeSpan.FromSeconds(5),
                         initialRetryDelayMs: 10,
                         maxRetryDelayMs: 1000,
@@ -90,18 +90,18 @@ namespace Datadog.Trace.Ci
 
             // Set the service name if empty
             Log.Debug("Setting up the service name");
-            if (string.IsNullOrEmpty(tracerSettings.ServiceName))
+            if (string.IsNullOrEmpty(tracerSettings.ServiceNameInternal))
             {
                 // Extract repository name from the git url and use it as a default service name.
-                tracerSettings.ServiceName = GetServiceNameFromRepository(CIEnvironmentValues.Instance.Repository);
+                tracerSettings.ServiceNameInternal = GetServiceNameFromRepository(CIEnvironmentValues.Instance.Repository);
             }
 
             // Normalize the service name
-            tracerSettings.ServiceName = NormalizerTraceProcessor.NormalizeService(tracerSettings.ServiceName);
+            tracerSettings.ServiceNameInternal = NormalizerTraceProcessor.NormalizeService(tracerSettings.ServiceNameInternal);
 
             // Initialize Tracer
             Log.Information("Initialize Test Tracer instance");
-            TracerManager.ReplaceGlobalManager(tracerSettings.Build(), new CITracerManagerFactory(_settings, discoveryService, eventPlatformProxyEnabled));
+            TracerManager.ReplaceGlobalManager(tracerSettings.BuildInternal(), new CITracerManagerFactory(_settings, discoveryService, eventPlatformProxyEnabled));
             _ = Tracer.Instance;
 
             // Initialize FrameworkDescription
