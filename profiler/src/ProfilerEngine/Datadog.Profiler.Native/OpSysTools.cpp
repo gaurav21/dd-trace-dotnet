@@ -381,6 +381,13 @@ bool OpSysTools::IsSafeToStartProfiler(double coresThreshold)
         }
     }
 
+    bool enableProfilerArm64 = false;
+    if (!shared::TryParseBooleanEnvironmentValue(EnvironmentVariables::EnableProfilerForArm64, enableProfilerArm64) || !enableProfilerArm64)
+    {
+        Log::Warn("Profiler is deactivated because it runs on an unsupported architecture.");
+        return false;
+    }
+
     return true;
 
 #endif

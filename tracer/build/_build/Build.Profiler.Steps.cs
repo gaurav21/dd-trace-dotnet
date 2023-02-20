@@ -205,7 +205,6 @@ partial class Build
     Target BuildAndRunProfilerIntegrationTests => _ => _
         .After(BuildProfilerSamples)
         .Description("Builds and runs the profiler integration tests")
-        .Requires(() => !IsArm64)
         .Executes(() =>
         {
             // Exclude CpuLimitTest from this path: They are already launched in a specific step + specific setup
@@ -221,6 +220,13 @@ partial class Build
                                                         .Select(x => ProfilerSolution.GetProject(x))
                                                         .ToList();
 
+        var envVars = new Dictionary<string, string>
+        {
+            {"DD_TESTING_OUPUT_DIR", ProfilerBuildDataDirectory },
+            {"MonitoringHomeDirectory", MonitoringHomeDirectory },
+            {"DD_INTERNAL_PROFILING_ARM64_ENABLED", "1" }
+        };
+
         try
         {
             // Run these ones in parallel
@@ -233,8 +239,7 @@ partial class Build
                                 .When(IncludeMinorPackageVersions, o => o.SetProperty("IncludeMinorPackageVersions", "true"))
                                 .SetFilter(filter)
                                 .SetProcessLogOutput(true)
-                                .SetProcessEnvironmentVariable("DD_TESTING_OUPUT_DIR", ProfilerBuildDataDirectory)
-                                .SetProcessEnvironmentVariable("MonitoringHomeDirectory", MonitoringHomeDirectory)
+                                .SetProcessEnvironmentVariables(envVars)
                                 .CombineWith(integrationTestProjects, (s, project) => s
                                                                                         .EnableTrxLogOutput(ProfilerBuildDataDirectory / "results" / project.Name)
                                                                                         .WithDatadogLogger()
