@@ -27,6 +27,122 @@ internal static class StringModuleImpl
         return value == null ? null : taintedObjects.Get(value);
     }
 
+    public static string TaintStringFormat(string result, IFormatProvider provider, string format, params object[] args)
+    {
+        try
+        {
+            var context = ContextHolder.Current;
+            var t = context.TaintedObjects;
+            t?.TaintStringFormat(context, result, provider, format, args);
+            return result;
+        }
+        catch (AST.Commons.Exceptions.HdivException) { throw; }
+        catch (Exception ex)
+        {
+            logger.Error(ex.ToFormattedString());
+            return result;
+        }
+    }
+
+    public bool TaintStringFormat(IHttpContext context, string result, IFormatProvider provider, string formatString, object[] args)
+    {
+        bool res = false;
+        var taintedObjectString = Get(formatString);
+        if (taintedObjectString != null) //Si lo que está tainted es la cadena de formato, tainteamos todo
+        {
+            res = true;
+            add(context, result, taintedObjectString, taintedObjectString.Ranges[0].CopyWithRange(0, result.Length));
+        }
+        else
+        {
+            List<TaintedRange> ranges = new List<TaintedRange>();
+
+            // this loop it is really operating throught arguments (in this case also with range reference)
+            foreach (var tuple in GetFormatRanges(provider, formatString, args))
+            {
+                Range range = tuple.Item1;
+                object arg = tuple.Item2;
+
+                var taintedArg = get(arg);
+                if (taintedArg != null) //Si está tainteado un argumento, tainteamos el rango en el resultado
+                {
+                    taintedObjectString ??= taintedArg;
+                    if (AddRangesWithinTaintedRangeLimit(taintedArg.Ranges, range.Start, ranges))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (ranges.Count > 0)
+            {
+                add(context, result, taintedObjectString, ranges);
+                res = true;
+            }
+        }
+
+        return res;
+    }
+
+    static List<Commons.Tuple<Range, object>> GetFormatRanges(IFormatProvider provider, string formatString, object[] args)
+    {
+        List<Commons.Tuple<Range, object>> res = new List<Commons.Tuple<Range, object>>();
+
+        //Format converts {{ into { and does not use this new bracket for arguments
+        formatString = formatString.Replace("{{{", "%{").Replace("}}}", "}%");
+        formatString = formatString.Replace("{{", "%").Replace("}}", "%");
+
+        int openIndex = formatString.IndexOf("{");
+        int formatOffset = 0;
+
+        while (openIndex >= 0)
+        {
+            int closeIndex = formatString.IndexOf("}", openIndex);
+            if (closeIndex > 0)
+            {
+                string formatFragment = formatString.Substring(openIndex, closeIndex - openIndex + 1);
+                string resFragment = provider != null
+                    ? string.Format(provider, formatFragment, args)
+                    : string.Format(formatFragment, args);
+                object arg = GetArg(formatFragment, args);
+
+                res.Add(new Commons.Tuple<Range, object>(
+                    new Range(formatOffset + openIndex, formatOffset + openIndex + resFragment.Length), arg));
+
+                formatOffset += resFragment.Length - formatFragment.Length;
+                openIndex = formatString.IndexOf("{", closeIndex);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    public static object GetArg(string formatString, object[] args)
+    {
+        var separatorIndex = -1;
+        var chars = formatString.ToCharArray();
+        for (var i = 0; i < chars.Length; i++)
+        {
+            if (chars[i] == ':')
+            {
+                separatorIndex = i;
+                break;
+            }
+
+            if (chars[i] == ',')
+            {
+                separatorIndex = i;
+                break;
+            }
+        }
+        var indexTxt = formatString.Substring(1, separatorIndex > 0 ? separatorIndex - 1 : formatString.Length - 2);
+        return args[Convert.ToInt32(indexTxt)];
+    }
+
     /// <summary> Mostly used overload </summary>
     /// <param name="left"> Param 1 </param>
     /// <param name="right"> Param 2</param>

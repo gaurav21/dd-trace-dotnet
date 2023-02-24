@@ -221,4 +221,60 @@ public partial class StringAspects
 
         return StringModuleImpl.OnStringConcat(values, string.Concat(valuesConverted));
     }
+
+    [AspectMethodReplace("System.String::Format(System.String,System.Object)")]
+    public static string Format(string format, object arg0)
+    {
+        string result = string.Format(format, arg0);
+        return TaintStringFormat(result, null, format, arg0);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.String,System.Object,System.Object)")]
+    public static string Format(string format, object arg0, object arg1)
+    {
+        string result = string.Format(format, arg0, arg1);
+        return TaintStringFormat(result, null, format, arg0, arg1);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.String,System.Object,System.Object,System.Object)")]
+    public static string Format(string format, object arg0, object arg1, object arg2)
+    {
+        string result = string.Format(format, arg0, arg1, arg2);
+        return TaintStringFormat(result, null, format, arg0, arg1, arg2);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.String,System.Object[])")]
+    public static string Format(string format, object[] args)
+    {
+        string result = string.Format(format, args);
+        return TaintStringFormat(result, null, format, args);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.IFormatProvider,System.String,System.Object)")]
+    public static string Format(IFormatProvider provider, string format, object arg0)
+    {
+        string result = string.Format(provider, format, arg0);
+        return TaintStringFormat(result, provider, format, arg0);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.IFormatProvider,System.String,System.Object,System.Object)")]
+    public static string Format(IFormatProvider provider, string format, object arg0, object arg1)
+    {
+        string result = string.Format(provider, format, arg0, arg1);
+        return TaintStringFormat(result, provider, format, arg0, arg1);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.IFormatProvider,System.String,System.Object,System.Object,System.Object)")]
+    public static string Format(IFormatProvider provider, string format, object arg0, object arg1, object arg2)
+    {
+        string result = string.Format(provider, format, arg0, arg1, arg2);
+        return TaintStringFormat(result, provider, format, arg0, arg1, arg2);
+    }
+
+    [AspectMethodReplace("System.String::Format(System.IFormatProvider,System.String,System.Object[])")]
+    public static string Format(IFormatProvider provider, string format, object[] args)
+    {
+        string result = string.Format(provider, format, args);
+        return TaintStringFormat(result, provider, format, args);
+    }
 }
