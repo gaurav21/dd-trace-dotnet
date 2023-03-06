@@ -7,6 +7,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Datadog.Trace.ClrProfiler.Managed.Loader
 {
@@ -28,8 +29,21 @@ namespace Datadog.Trace.ClrProfiler.Managed.Loader
         /// </summary>
         static Startup()
         {
+            Console.WriteLine("Calling ResolveManagedProfilerDirectory");
             ManagedProfilerDirectory = ResolveManagedProfilerDirectory();
+            Console.WriteLine("Returned from ResolveManagedProfilerDirectory");
             StartupLogger.Debug("Resolving managed profiler directory to: {0}", ManagedProfilerDirectory);
+
+            try
+            {
+                Console.WriteLine("Starting to set first chance exception");
+                AppDomain.CurrentDomain.FirstChanceException += FirstChanceHandler;
+                Console.WriteLine("Finished setting first chance exception");
+            }
+            catch (Exception ex)
+            {
+                StartupLogger.Log(ex, "Unable to register a callback to the CurrentDomain.AssemblyResolve event.");
+            }
 
             try
             {
@@ -65,9 +79,16 @@ namespace Datadog.Trace.ClrProfiler.Managed.Loader
                 StartupLogger.Log("Invoking managed tracer.");
                 TryInvokeManagedMethod("Datadog.Trace.ClrProfiler.Instrumentation", "Initialize", "Datadog.Trace.ClrProfiler.InstrumentationLoader");
             }
+
+            ManagedProfilerDirectory = string.Empty;
         }
 
         internal static string ManagedProfilerDirectory { get; }
+
+        private static void FirstChanceHandler(object source, FirstChanceExceptionEventArgs e)
+        {
+            Console.WriteLine("FirstChanceException event raised in {0}: {1} : {2}", AppDomain.CurrentDomain.FriendlyName, e.Exception.Message, e.Exception.StackTrace);
+        }
 
         private static void TryInvokeManagedMethod(string typeName, string methodName, string? loaderHelperTypeName = null)
         {

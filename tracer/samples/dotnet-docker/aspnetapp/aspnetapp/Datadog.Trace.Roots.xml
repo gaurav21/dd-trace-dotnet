@@ -1,0 +1,40 @@
+<linker>
+    <assembly fullname="System.Console">
+        <type fullname="System.Console">
+            <method name="WriteLine" />
+        </type>
+    </assembly>
+
+    <assembly fullname="System.Runtime">
+        <type fullname="System.Reflection.Assembly">
+            <method name="CreateInstance" />
+            <method name="GetType" />
+            <method name="Load" />
+        </type>
+
+        <type fullname="System.AppDomain" preserve="all"/>
+        <type fullname="System.Version" preserve="all" />
+        <type fullname="System.Environment" preserve="all" />
+
+        <type fullname="System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs" preserve="all" />
+        <type fullname="System.ResolveEventArgs" preserve="all" />
+
+        <type fullname="System.IO.Directory" preserve="all" />
+        <type fullname="System.IO.File" preserve="all" />
+        <type fullname="System.IO.Path" preserve="all" />
+        <type fullname="System.IO.StreamWriter" preserve="all" />
+
+        <type fullname="System.Reflection.RuntimeReflectionExtensions" preserve="all" />
+    </assembly>
+
+    <assembly fullname="System.Runtime.Extensions" preserve="all" />
+
+    <assembly fullname="System.Runtime.Loader">
+        <type fullname="System.Runtime.Loader.AssemblyLoadContext" preserve="all"/>
+    </assembly>
+
+    <assembly fullname="System.IO.FileSystem" preserve="all" />
+    <assembly fullname="System.Diagnostics.Process">
+        <type fullname="System.Diagnostics.Process" preserve="all" />
+    </assembly>
+</linker>

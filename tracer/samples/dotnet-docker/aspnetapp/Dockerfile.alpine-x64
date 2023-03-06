@@ -16,4 +16,20 @@ RUN dotnet publish -c Release -o /app -r linux-musl-x64 --self-contained false -
 FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine-amd64
 WORKDIR /app
 COPY --from=build /app .
+
+# Set up Datadog APM
+RUN apk --no-cache update && apk add curl
+ARG TRACER_VERSION=2.24.0
+RUN mkdir -p /var/log/datadog
+RUN mkdir -p /opt/datadog
+RUN curl -L https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm-${TRACER_VERSION}-musl.tar.gz \
+  |  tar xzf - -C /opt/datadog
+
+ENV CORECLR_ENABLE_PROFILING=1
+ENV CORECLR_PROFILER={846F5F1C-F9AE-4B07-969E-05C26BC060D8}
+ENV CORECLR_PROFILER_PATH=/opt/datadog/Datadog.Trace.ClrProfiler.Native.so
+ENV DD_DOTNET_TRACER_HOME=/opt/datadog
+ENV DD_AGENT_HOST=host.docker.internal
+ENV DD_TRACE_DEBUG=true
+
 ENTRYPOINT ["./aspnetapp"]
