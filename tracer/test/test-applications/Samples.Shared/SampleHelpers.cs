@@ -39,6 +39,7 @@ namespace Samples
         private static readonly MethodInfo SetExceptionMethod = SpanType?.GetMethod("SetException", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo FromDefaultSourcesMethod = TracerSettingsType?.GetMethod("FromDefaultSources", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo SetService = TracerSettingsType?.GetProperty("Service")?.SetMethod;
+        private static readonly MethodInfo GetMetricMethod = SpanType?.GetMethod("GetMetric", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly FieldInfo TracerThreePartVersionField = TracerConstantsType?.GetField("ThreePartVersion");
 
 
@@ -252,6 +253,27 @@ namespace Samples
                 }
             }
             return null;
+        }
+
+        public static bool TryGetMetric(object scope, string key, out double metric)
+        {
+            metric = 0.0;
+
+            if (SpanProperty is null || GetMetricMethod is null)
+            {
+                return false;
+            }
+
+            var span = SpanProperty.Invoke(scope, Array.Empty<object>());
+            var metricValue = GetMetricMethod.Invoke(span, new[] { key });
+
+            if (metricValue is null)
+            {
+                return false;
+            }
+
+            metric = (double)metricValue;
+            return true;
         }
 
         public static void TrySetExceptionOnActiveScope(Exception exception)
