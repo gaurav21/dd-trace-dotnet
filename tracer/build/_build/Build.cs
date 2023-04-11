@@ -217,7 +217,6 @@ partial class Build : NukeBuild
         .Requires(() => IsWin)
         .Description("Builds the regression tests for Windows")
         .DependsOn(CompileManagedTestHelpers)
-        .DependsOn(CompileRegressionDependencyLibs)
         .DependsOn(CompileRegressionSamples)
         .DependsOn(CompileIntegrationTests);
 
@@ -246,7 +245,6 @@ partial class Build : NukeBuild
         .Requires(() => !IsWin)
         .Description("Builds the linux integration tests")
         .DependsOn(CompileDependencyLibs)
-        .DependsOn(CompileRegressionDependencyLibs)
         .DependsOn(CompileManagedTestHelpers)
         .DependsOn(CompileSamplesLinuxOrOsx)
         .DependsOn(CompileMultiApiPackageVersionSamples)
@@ -264,7 +262,6 @@ partial class Build : NukeBuild
         .Requires(() => IsOsx)
         .Description("Builds the osx integration tests")
         .DependsOn(CompileDependencyLibs)
-        .DependsOn(CompileRegressionDependencyLibs)
         .DependsOn(CompileManagedTestHelpers)
         .DependsOn(CompileSamplesLinuxOrOsx)
         .DependsOn(CompileMultiApiPackageVersionSamples)

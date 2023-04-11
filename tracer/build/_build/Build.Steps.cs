@@ -970,23 +970,8 @@ partial class Build
             DotnetBuild(projects, noDependencies: false);
         });
 
-    Target CompileRegressionDependencyLibs => _ => _
-        .Unlisted()
-        .After(Restore)
-        .After(CompileManagedSrc)
-        .Executes(() =>
-        {
-            var projects = TracerDirectory.GlobFiles(
-                "test/test-applications/regression/dependency-libs/**/Datadog.StackExchange.Redis*.csproj"
-            );
-
-            DotnetBuild(projects, noDependencies: false);
-        });
-
     Target CompileRegressionSamples => _ => _
         .Unlisted()
-        .After(Restore)
-        .After(CompileRegressionDependencyLibs)
         .Requires(() => Framework)
         .Executes(() =>
         {
@@ -1009,7 +994,7 @@ partial class Build
 
             // Allow restore here, otherwise things go wonky with runtime identifiers
             // in some target frameworks. No, I don't know why
-            DotnetBuild(regressionLibs, framework: Framework, noRestore: false);
+            DotnetBuild(regressionLibs, framework: Framework, noRestore: false, noDependencies: false);
         });
 
     Target CompileIntegrationTests => _ => _
@@ -1356,7 +1341,6 @@ partial class Build
     Target CompileSamplesLinuxOrOsx => _ => _
         .Unlisted()
         .After(CompileManagedSrc)
-        .After(CompileRegressionDependencyLibs)
         .After(CompileDependencyLibs)
         .After(CompileManagedTestHelpers)
         .Requires(() => MonitoringHomeDirectory != null)
@@ -1479,7 +1463,6 @@ partial class Build
     Target CompileMultiApiPackageVersionSamples => _ => _
         .Unlisted()
         .After(CompileManagedSrc)
-        .After(CompileRegressionDependencyLibs)
         .After(CompileDependencyLibs)
         .After(CompileManagedTestHelpers)
         .After(CompileSamplesLinuxOrOsx)
@@ -1519,7 +1502,6 @@ partial class Build
     Target CompileLinuxOrOsxIntegrationTests => _ => _
         .Unlisted()
         .After(CompileManagedSrc)
-        .After(CompileRegressionDependencyLibs)
         .After(CompileDependencyLibs)
         .After(CompileManagedTestHelpers)
         .After(CompileSamplesLinuxOrOsx)
