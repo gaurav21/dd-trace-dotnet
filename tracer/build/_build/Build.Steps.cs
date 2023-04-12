@@ -897,7 +897,6 @@ partial class Build
 
     Target CompileRegressionSamples => _ => _
         .Unlisted()
-        .Requires(() => Framework)
         .Executes(() =>
         {
             var regressionLibs = Solution.GetProject(Projects.DataDogThreadTest).Directory.Parent
@@ -912,7 +911,7 @@ partial class Build
                         _ when path.Contains("MismatchedTracerVersions") => false,
                         _ when path.Contains("dependency-libs") => false,
                         _ when !string.IsNullOrWhiteSpace(SampleName) => path.Contains(SampleName),
-                        (_, { } targets) => targets.Contains(Framework),
+                        // (_, { } targets) => targets.Contains(Framework),
                         _ => true,
                     };
                 });
@@ -925,7 +924,6 @@ partial class Build
     Target CompileSamplesWindows => _ => _
         .Unlisted()
         .Requires(() => MonitoringHomeDirectory != null)
-        .Requires(() => Framework)
         .Executes(() =>
         {
             // This does some "unnecessary" rebuilding and restoring
@@ -945,7 +943,7 @@ partial class Build
                     _ when exclude.Contains(project.Path) => false,
                     _ when !string.IsNullOrWhiteSpace(SampleName) => project.Path.ToString().Contains(SampleName),
                     (_, _, true) => false, // can't use docker on Windows
-                    (_, { } targets, _) => targets.Contains(Framework),
+                    // (_, { } targets, _) => targets.Contains(Framework),
                     _ => true,
                 }
             );
@@ -958,7 +956,7 @@ partial class Build
                 .When(!string.IsNullOrEmpty(NugetPackageDirectory), o => o.SetPackageDirectory(NugetPackageDirectory))
                 .CombineWith(projects, (s, project) => s
                     // we have to build this one for all frameworks (because of reasons)
-                    .When(!project.Name.Contains("MultiDomainHost"), x => x.SetFramework(Framework))
+                    // .When(!project.Name.Contains("MultiDomainHost"), x => x.SetFramework(Framework))
                     .SetProjectFile(project)));
         });
 
