@@ -77,7 +77,7 @@ namespace Datadog.Trace
         /// The <see cref="TracerManager"/> created will be scoped specifically to this instance.
         /// </summary>
         internal Tracer(TracerSettings settings, IAgentWriter agentWriter, ITraceSampler sampler, IScopeManager scopeManager, IDogStatsd statsd, ITelemetryController telemetry = null, IDiscoveryService discoveryService = null)
-            : this(TracerManagerFactory.Instance.CreateTracerManager(settings?.Build(), agentWriter, sampler, scopeManager, statsd, runtimeMetrics: null, logSubmissionManager: null, telemetry: telemetry ?? NullTelemetryController.Instance, discoveryService ?? NullDiscoveryService.Instance, dataStreamsManager: null, remoteConfigurationManager: null))
+            : this(TracerManagerFactory.Instance.CreateTracerManager(settings?.Build(), agentWriter, sampler, scopeManager, statsd, runtimeMetrics: null, logSubmissionManager: null, telemetry: telemetry ?? NullTelemetryController.Instance, discoveryService ?? NullDiscoveryService.Instance, dataStreamsManager: null, remoteConfigurationManager: null, dynamicConfigurationManager: null))
         {
         }
 
@@ -250,8 +250,11 @@ namespace Datadog.Trace
         /// <param name="settings"> A <see cref="TracerSettings"/> instance with the desired settings,
         /// or null to use the default configuration sources. This is used to configure global settings</param>
         public static void Configure(TracerSettings settings)
+            => Configure(settings?.Build());
+
+        internal static void Configure(ImmutableTracerSettings settings)
         {
-            TracerManager.ReplaceGlobalManager(settings?.Build(), TracerManagerFactory.Instance);
+            TracerManager.ReplaceGlobalManager(settings, TracerManagerFactory.Instance);
             Tracer.Instance.TracerManager.Start();
         }
 
