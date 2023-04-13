@@ -283,7 +283,7 @@ stages:
             targetBranch: $(targetBranch)
         - template: steps/install-latest-dotnet-sdk.yml
 
-        - script: tracer\build.cmd CompileSamplesWindows CompileRegressionSamples PublishIisSamples
+        - script: tracer\build.cmd CompileSamplesWindows CompileRegressionSamples
           displayName: Build samples
           retryCountOnTaskFailure: 1
 
@@ -1074,7 +1074,7 @@ stages:
 
 - stage: integration_tests_windows_iis
   condition: and(succeeded(), eq(variables['isBenchmarksOnlyBuild'], 'False'))
-  dependsOn: [build_windows_tracer, build_windows_samples, generate_variables, merge_commit_id]
+  dependsOn: [build_windows_tracer, generate_variables, merge_commit_id]
   variables:
     targetShaId: $[ stageDependencies.merge_commit_id.fetch.outputs['set_sha.sha']]
     targetBranch: $[ stageDependencies.merge_commit_id.fetch.outputs['set_sha.branch']]
@@ -1102,9 +1102,8 @@ stages:
       parameters:
         includeX86: true
     - template: steps/restore-working-directory.yml
-    - template: steps/restore-samples.yml
 
-    - script: tracer\build.cmd RunWindowsTracerIisIntegrationTests -Framework $(framework) --code-coverage $(runCodeCoverage)
+    - script: tracer\build.cmd PublishIisSamples RunWindowsTracerIisIntegrationTests -Framework $(framework) --code-coverage $(runCodeCoverage)
       displayName: RunWindowsIisTracerIntegrationTests
       env:
         DD_LOGGER_DD_API_KEY: $(ddApiKey)
@@ -1133,7 +1132,7 @@ stages:
 
 - stage: integration_tests_windows_iis_security
   condition: and(succeeded(), eq(variables['isBenchmarksOnlyBuild'], 'False'))
-  dependsOn: [build_windows_tracer, build_windows_samples, generate_variables, merge_commit_id]
+  dependsOn: [build_windows_tracer, generate_variables, merge_commit_id]
   variables:
     targetShaId: $[ stageDependencies.merge_commit_id.fetch.outputs['set_sha.sha']]
     targetBranch: $[ stageDependencies.merge_commit_id.fetch.outputs['set_sha.branch']]
@@ -1161,9 +1160,8 @@ stages:
       parameters:
         includeX86: true
     - template: steps/restore-working-directory.yml
-    - template: steps/restore-samples.yml
 
-    - script: tracer\build.cmd RunWindowsSecurityIisIntegrationTests -Framework $(framework) --code-coverage $(runCodeCoverage)
+    - script: tracer\build.cmd PublishIisSamples RunWindowsSecurityIisIntegrationTests -Framework $(framework) --code-coverage $(runCodeCoverage)
       displayName: RunWindowsIisSecurityIntegrationTests
       env:
         DD_LOGGER_DD_API_KEY: $(ddApiKey)
