@@ -1055,35 +1055,10 @@ partial class Build
             }
         });
 
-    Target CompileAzureFunctionsSamplesWindows => _ => _
-        .Unlisted()
-        .Requires(() => MonitoringHomeDirectory != null)
-        .Requires(() => Framework)
-        .Executes(() =>
-        {
-            // This does some "unnecessary" rebuilding and restoring
-            var azureFunctions = TracerDirectory.GlobFiles("test/test-applications/azure-functions/**/*.csproj");
-
-            var projects = azureFunctions
-                .Where(path =>
-                {
-                    var project = Solution.GetProject(path);
-                    return (project, project.TryGetTargetFrameworks(), project.RequiresDockerDependency()) switch
-                    {
-                        (_, { } targets, _) => targets.Contains(Framework),
-                        _ => true,
-                    };
-                });
-
-
-            DotnetBuild(projects, noRestore: false);
-        });
-
     Target RunWindowsAzureFunctionsTests => _ => _
         .Unlisted()
         .After(BuildTracerHome)
         .After(CompileManagedSrc)
-        .After(CompileAzureFunctionsSamplesWindows)
         .After(BuildWindowsIntegrationTests)
         .Requires(() => IsWin)
         .Requires(() => Framework)
