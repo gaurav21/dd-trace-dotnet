@@ -27,22 +27,23 @@ namespace Benchmarks.Trace
             else
             {
                 var config = DefaultConfig.Instance
-                    .WithDatadog()
-                    .AddExporter(JsonExporter.FullCompressed);
+                                          .WithDatadog()
+                                          .AddExporter(JsonExporter.FullCompressed);
                 // config = config.WithOptions(ConfigOptions.DisableOptimizationsValidator);
-                var agentName = Environment.GetEnvironmentVariable("AGENT_NAME");
-                if (Enum.TryParse(agentName, out AgentFilterAttribute.Agent benchmarkAgent))
-                {
-                    var attributeName = $"{benchmarkAgent}Attribute";
-                    Console.WriteLine($"Found agent name {agentName}; executing only benchmarks decorated with '{attributeName}");
-                    config.AddFilter(new AttributesFilter(new[] { attributeName }));
-                }
-                else
-                {
-                    Console.WriteLine($"Unknown agent name {agentName}; executing all benchmarks");
-                }
-
-                BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
+                BenchmarkRunner.Run<AppSecWafBenchmark>(config);
+                // var agentName = Environment.GetEnvironmentVariable("AGENT_NAME");
+                // if (Enum.TryParse(agentName, out AgentFilterAttribute.Agent benchmarkAgent))
+                // {
+                //     var attributeName = $"{benchmarkAgent}Attribute";
+                //     Console.WriteLine($"Found agent name {agentName}; executing only benchmarks decorated with '{attributeName}");
+                //     config.AddFilter(new AttributesFilter(new[] { attributeName }));
+                // }
+                // else
+                // {
+                //     Console.WriteLine($"Unknown agent name {agentName}; executing all benchmarks");
+                // }
+                //
+                // BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
             }
         }
 
@@ -71,6 +72,7 @@ namespace Benchmarks.Trace
                     Thread.Sleep(1000);
                 }
             }
+
             Console.WriteLine("Connected. Running benchmarks (N: {0})", numIter);
             HashSet<string> hashSet = new HashSet<string>(args.Where(a => a != "-jetbrains" && !a.StartsWith("-n:", StringComparison.OrdinalIgnoreCase)).Select(a => a.ToLowerInvariant()));
             var benchmarkTypes = typeof(Program).Assembly.GetTypes().Where(t => hashSet.Contains(t.Name.ToLowerInvariant()));
@@ -87,6 +89,7 @@ namespace Benchmarks.Trace
                         {
                             method.Invoke(benchmarkInstance, null);
                         }
+
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
 
@@ -98,6 +101,7 @@ namespace Benchmarks.Trace
                             {
                                 method.Invoke(benchmarkInstance, null);
                             }
+
                             JetBrains.Profiler.Api.MeasureProfiler.StopCollectingData();
                             JetBrains.Profiler.Api.MeasureProfiler.SaveData(groupName);
                             GC.Collect();
@@ -113,11 +117,13 @@ namespace Benchmarks.Trace
                             {
                                 method.Invoke(benchmarkInstance, null);
                             }
+
                             JetBrains.Profiler.Api.MemoryProfiler.GetSnapshot(groupName);
                             JetBrains.Profiler.Api.MemoryProfiler.CollectAllocations(false);
                         }
                     }
                 }
+
                 Console.WriteLine("Done.");
             }
         }
