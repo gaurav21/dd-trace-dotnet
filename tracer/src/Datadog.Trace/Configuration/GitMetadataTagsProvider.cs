@@ -111,12 +111,12 @@ internal class GitMetadataTagsProvider : IGitMetadataTagsProvider
 
         if (SourceLinkInformationExtractor.TryGetSourceLinkInfo(assembly, out var commitSha, out var repositoryUrl))
         {
-            Log.Information("Found SourceLink information for assembly {Name}: commit {CommitSha} from {RepositoryUrl}", assembly.GetName().Name, commitSha, repositoryUrl);
+            Log.Debug("Found SourceLink information for assembly {Name}: commit {CommitSha} from {RepositoryUrl}", assembly.GetName().Name, commitSha, repositoryUrl);
             result = new GitMetadata(commitSha, repositoryUrl);
             return true;
         }
 
-        Log.Information("No SourceLink information found for assembly {AssemblyName}", assembly.GetName().Name);
+        Log.Debug("No SourceLink information found for assembly {AssemblyName}", assembly.GetName().Name);
         result = GitMetadata.Empty;
         return true;
     }

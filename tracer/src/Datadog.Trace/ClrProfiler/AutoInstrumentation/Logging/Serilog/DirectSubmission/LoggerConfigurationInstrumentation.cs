@@ -80,7 +80,7 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.Serilog.DirectSu
 
                 var proxy = sink.DuckImplement(targetType);
                 instance.LogEventSinks.Add(proxy);
-                Log.Information("Direct log submission via Serilog enabled");
+                Log.Debug("Direct log submission via Serilog enabled");
             }
         }
 

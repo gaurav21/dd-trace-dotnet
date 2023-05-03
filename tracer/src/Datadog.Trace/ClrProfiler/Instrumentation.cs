@@ -94,7 +94,7 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Debug("Enabling by ref instrumentation.");
                 NativeMethods.EnableByRefInstrumentation();
-                Log.Information("ByRef instrumentation enabled.");
+                Log.Debug("ByRef instrumentation enabled.");
             }
             catch (Exception ex)
             {
@@ -105,7 +105,7 @@ namespace Datadog.Trace.ClrProfiler
             {
                 Log.Debug("Enabling calltarget state by ref.");
                 NativeMethods.EnableCallTargetStateByRef();
-                Log.Information("CallTarget State ByRef enabled.");
+                Log.Debug("CallTarget State ByRef enabled.");
             }
             catch (Exception ex)
             {
@@ -117,7 +117,7 @@ namespace Datadog.Trace.ClrProfiler
                 Log.Debug("Initializing TraceAttribute instrumentation.");
                 var payload = InstrumentationDefinitions.GetTraceAttributeDefinitions();
                 NativeMethods.AddTraceAttributeInstrumentation(payload.DefinitionsId, payload.AssemblyName, payload.TypeName);
-                Log.Information("TraceAttribute instrumentation enabled with Assembly={AssemblyName} and Type={TypeName}.", payload.AssemblyName, payload.TypeName);
+                Log.Debug("TraceAttribute instrumentation enabled with Assembly={AssemblyName} and Type={TypeName}.", payload.AssemblyName, payload.TypeName);
             }
             catch (Exception ex)
             {
@@ -133,7 +133,7 @@ namespace Datadog.Trace.ClrProfiler
                 var payload = InstrumentationDefinitions.GetAllDefinitions();
                 NativeMethods.InitializeProfiler(payload.DefinitionsId, payload.Definitions);
 
-                Log.Information<int>("The profiler has been initialized with {Count} definitions.", payload.Definitions.Length);
+                Log.Debug<int>("The profiler has been initialized with {Count} definitions.", payload.Definitions.Length);
             }
             catch (Exception ex)
             {
@@ -155,7 +155,7 @@ namespace Datadog.Trace.ClrProfiler
                 var payload = InstrumentationDefinitions.GetDerivedDefinitions();
                 NativeMethods.AddDerivedInstrumentations(payload.DefinitionsId, payload.Definitions);
 
-                Log.Information<int>("The profiler has been initialized with {Count} derived definitions.", payload.Definitions.Length);
+                Log.Debug<int>("The profiler has been initialized with {Count} derived definitions.", payload.Definitions.Length);
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ namespace Datadog.Trace.ClrProfiler
                 var payload = InstrumentationDefinitions.GetInterfaceDefinitions();
                 NativeMethods.AddInterfaceInstrumentations(payload.DefinitionsId, payload.Definitions);
 
-                Log.Information<int>("The profiler has been initialized with {Count} interface definitions.", payload.Definitions.Length);
+                Log.Debug<int>("The profiler has been initialized with {Count} interface definitions.", payload.Definitions.Length);
             }
             catch (Exception ex)
             {
@@ -196,7 +196,7 @@ namespace Datadog.Trace.ClrProfiler
                     var traceMethodsConfiguration = tracer.Settings.TraceMethods;
                     var payload = InstrumentationDefinitions.GetTraceMethodDefinitions();
                     NativeMethods.InitializeTraceMethods(payload.DefinitionsId, payload.AssemblyName, payload.TypeName, traceMethodsConfiguration);
-                    Log.Information("TraceMethods instrumentation enabled with Assembly={AssemblyName}, Type={TypeName}, and Configuration={Configuration}.", payload.AssemblyName, payload.TypeName, traceMethodsConfiguration);
+                    Log.Debug("TraceMethods instrumentation enabled with Assembly={AssemblyName}, Type={TypeName}, and Configuration={Configuration}.", payload.AssemblyName, payload.TypeName, traceMethodsConfiguration);
                 }
                 catch (Exception ex)
                 {
@@ -223,11 +223,11 @@ namespace Datadog.Trace.ClrProfiler
                     NativeMethods.InitializeProfiler(payload.DefinitionsId, payload.Definitions);
                     derived = payload.Definitions.Length;
 
-                    Log.Information<int, int>("{Defs} IAST definitions and {Derived} IAST derived definitions added to the profiler.", defs, derived);
+                    Log.Debug<int, int>("{Defs} IAST definitions and {Derived} IAST derived definitions added to the profiler.", defs, derived);
 
                     Log.Debug("Registering IAST Callsite Dataflow Aspects into native library.");
                     var aspects = NativeMethods.RegisterIastAspects(AspectDefinitions.Aspects);
-                    Log.Information<int>("{Aspects} IAST Callsite Dataflow Aspects added to the profiler.", aspects);
+                    Log.Debug<int>("{Aspects} IAST Callsite Dataflow Aspects added to the profiler.", aspects);
                 }
                 catch (Exception ex)
                 {
@@ -279,9 +279,9 @@ namespace Datadog.Trace.ClrProfiler
 #pragma warning disable DDLOG004 // Message templates should be constant
 #if NET5_0_OR_GREATER
                 // Can't use asm.CodeBase or asm.GlobalAssemblyCache in .NET 5+
-                Log.Information($"[Assembly metadata] Location: {asm.Location}, HostContext: {asm.HostContext}, SecurityRuleSet: {asm.SecurityRuleSet}");
+                Log.Debug($"[Assembly metadata] Location: {asm.Location}, HostContext: {asm.HostContext}, SecurityRuleSet: {asm.SecurityRuleSet}");
 #else
-                Log.Information($"[Assembly metadata] Location: {asm.Location}, CodeBase: {asm.CodeBase}, GAC: {asm.GlobalAssemblyCache}, HostContext: {asm.HostContext}, SecurityRuleSet: {asm.SecurityRuleSet}");
+                Log.Debug($"[Assembly metadata] Location: {asm.Location}, CodeBase: {asm.CodeBase}, GAC: {asm.GlobalAssemblyCache}, HostContext: {asm.HostContext}, SecurityRuleSet: {asm.SecurityRuleSet}");
 #endif
 #pragma warning restore DDLOG004 // Message templates should be constant
             }
@@ -344,7 +344,7 @@ namespace Datadog.Trace.ClrProfiler
             // we only support Service Fabric Service Remoting instrumentation on .NET Core (including .NET 5+)
             if (FrameworkDescription.Instance.IsCoreClr())
             {
-                Log.Information("Initializing ServiceFabric instrumentation");
+                Log.Debug("Initializing ServiceFabric instrumentation");
 
                 try
                 {

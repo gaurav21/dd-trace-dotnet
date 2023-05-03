@@ -256,7 +256,7 @@ namespace Datadog.Trace
                     await oldManager.DataStreamsManager.DisposeAsync().ConfigureAwait(false);
                 }
 
-                Log.Information(
+                Log.Debug(
                     exception: null,
                     "Replaced global instances. AgentWriter: {AgentWriterReplaced}, StatsD: {StatsDReplaced}, RuntimeMetricsWriter: {RuntimeMetricsWriterReplaced}, Telemetry: {TelemetryReplaced}, Discovery: {DiscoveryReplaced}, DataStreamsManager: {DataStreamsManagerReplaced}",
                     new object[] { agentWriterReplaced, statsdReplaced, runtimeMetricsWriterReplaced, telemetryReplaced, discoveryReplaced, dataStreamsReplaced });

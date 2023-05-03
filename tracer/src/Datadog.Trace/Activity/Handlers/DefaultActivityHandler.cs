@@ -223,12 +223,12 @@ namespace Datadog.Trace.Activity.Handlers
                 {
                     if (Log.IsEnabled(LogEventLevel.Information))
                     {
-                        Log.Information("DefaultActivityHandler.ActivityStopped: MISSING SCOPE [Source={SourceName}, Id={Id}, RootId={RootId}, OperationName={OperationName}, StartTimeUtc={StartTimeUtc}, Duration={Duration}]", new object[] { sourceName, activity!.Id, activity.RootId, activity.OperationName!, activity.StartTimeUtc, activity.Duration });
+                        Log.Debug("DefaultActivityHandler.ActivityStopped: MISSING SCOPE [Source={SourceName}, Id={Id}, RootId={RootId}, OperationName={OperationName}, StartTimeUtc={StartTimeUtc}, Duration={Duration}]", new object[] { sourceName, activity!.Id, activity.RootId, activity.OperationName!, activity.StartTimeUtc, activity.Duration });
                     }
                 }
                 else
                 {
-                    Log.Information($"DefaultActivityHandler.ActivityStopped: [Missing Activity]");
+                    Log.Debug($"DefaultActivityHandler.ActivityStopped: [Missing Activity]");
                 }
 
                 List<string>? toDelete = null;

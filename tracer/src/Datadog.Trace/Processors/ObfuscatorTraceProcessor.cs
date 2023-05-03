@@ -45,7 +45,7 @@ namespace Datadog.Trace.Processors
         public ObfuscatorTraceProcessor(bool redisTagObfuscationEnabled)
         {
             _tagsProcessor = new(redisTagObfuscationEnabled);
-            Log.Information("ObfuscatorTraceProcessor initialized. Redis tag obfuscation enabled: {RedisObfuscation}", redisTagObfuscationEnabled);
+            Log.Debug("ObfuscatorTraceProcessor initialized. Redis tag obfuscation enabled: {RedisObfuscation}", redisTagObfuscationEnabled);
         }
 
         public ArraySegment<Span> Process(ArraySegment<Span> trace)

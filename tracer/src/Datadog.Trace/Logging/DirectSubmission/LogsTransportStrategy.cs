@@ -21,10 +21,10 @@ namespace Datadog.Trace.Logging.DirectSubmission
             var timeout = TimeSpan.FromSeconds(15);
 
 #if NETCOREAPP
-            Log.Information("Using {FactoryType} for log submission transport.", nameof(HttpClientRequestFactory));
+            Log.Debug("Using {FactoryType} for log submission transport.", nameof(HttpClientRequestFactory));
             return new HttpClientRequestFactory(settings.IntakeUrl, LogsApiHeaderNames.DefaultHeaders, timeout: timeout);
 #else
-            Log.Information("Using {FactoryType} for log submission transport.", nameof(ApiWebRequestFactory));
+            Log.Debug("Using {FactoryType} for log submission transport.", nameof(ApiWebRequestFactory));
             return new ApiWebRequestFactory(settings.IntakeUrl, LogsApiHeaderNames.DefaultHeaders, timeout: timeout);
 #endif
         }

@@ -21,10 +21,10 @@ internal static class TelemetryTransportStrategy
     public static IApiRequestFactory GetDirectIntakeFactory(Uri baseEndpoint, string apiKey)
     {
 #if NETCOREAPP
-        Log.Information("Using {FactoryType} for telemetry transport direct to intake.", nameof(HttpClientRequestFactory));
+        Log.Debug("Using {FactoryType} for telemetry transport direct to intake.", nameof(HttpClientRequestFactory));
         return new HttpClientRequestFactory(baseEndpoint, TelemetryHttpHeaderNames.GetDefaultIntakeHeaders(apiKey), timeout: Timeout);
 #else
-        Log.Information("Using {FactoryType} for telemetry transport direct to intake.", nameof(ApiWebRequestFactory));
+        Log.Debug("Using {FactoryType} for telemetry transport direct to intake.", nameof(ApiWebRequestFactory));
         return new ApiWebRequestFactory(baseEndpoint, TelemetryHttpHeaderNames.GetDefaultIntakeHeaders(apiKey), timeout: Timeout);
 #endif
     }

@@ -114,7 +114,7 @@ namespace Datadog.Trace.ClrProfiler
 
         public void Register(object manualTracer)
         {
-            Log.Information("Registering {Child} as child tracer", manualTracer.GetType());
+            Log.Debug("Registering {Child} as child tracer", manualTracer.GetType());
             _child = manualTracer.DuckCast<ICommonTracer>();
         }
 

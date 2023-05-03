@@ -98,7 +98,7 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.ILogger.DirectSu
             {
                 var loggerFactoryProxy = loggerFactory.DuckCast<ILoggerFactory>();
                 loggerFactoryProxy.AddProvider(proxy);
-                Log.Information("Direct log submission via ILogger enabled");
+                Log.Debug("Direct log submission via ILogger enabled");
             }
 
             return proxy;

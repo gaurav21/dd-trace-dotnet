@@ -41,10 +41,10 @@ internal static class TracerDebugger
         if (!string.IsNullOrEmpty(debugEnabled) && debugEnabled.Equals("1", StringComparison.Ordinal))
         {
             Console.WriteLine("Waiting for debugger attach...");
-            Log.Information("Waiting for debugger attach...");
+            Log.Debug("Waiting for debugger attach...");
             var currentProcess = Process.GetCurrentProcess();
             Console.WriteLine("Process Id: {0}, Name: {1}", currentProcess.Id, currentProcess.ProcessName);
-            Log.Information<int, string>("Process Id: {id}, Name: {name}", currentProcess.Id, currentProcess.ProcessName);
+            Log.Debug<int, string>("Process Id: {id}, Name: {name}", currentProcess.Id, currentProcess.ProcessName);
             while (!SD.Debugger.IsAttached)
             {
                 Task.Delay(1000).Wait();
@@ -65,10 +65,10 @@ internal static class TracerDebugger
                                                       && FrameworkDescription.Instance.IsWindows())
         {
             Console.WriteLine("Waiting for native debugger attach...");
-            Log.Information("Waiting for native debugger attach...");
+            Log.Debug("Waiting for native debugger attach...");
             var currentProcess = Process.GetCurrentProcess();
             Console.WriteLine("Process Id: {0}, Name: {1}", currentProcess.Id, currentProcess.ProcessName);
-            Log.Information<int, string>("Process Id: {id}, Name: {name}", currentProcess.Id, currentProcess.ProcessName);
+            Log.Debug<int, string>("Process Id: {id}, Name: {name}", currentProcess.Id, currentProcess.ProcessName);
             while (!IsDebuggerPresent())
             {
                 Task.Delay(1000).Wait();

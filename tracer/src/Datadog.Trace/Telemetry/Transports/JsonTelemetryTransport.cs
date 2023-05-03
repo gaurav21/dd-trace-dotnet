@@ -65,12 +65,12 @@ namespace Datadog.Trace.Telemetry.Transports
             }
             catch (Exception ex) when (IsFatalException(ex))
             {
-                Log.Information(ex, "Error sending telemetry data, unable to communicate with '{Endpoint}'", GetEndpointInfo());
+                Log.Warning(ex, "Error sending telemetry data, unable to communicate with '{Endpoint}'", GetEndpointInfo());
                 return TelemetryPushResult.FatalError;
             }
             catch (Exception ex)
             {
-                Log.Information(ex, "Error sending telemetry data to '{Endpoint}'", GetEndpointInfo());
+                Log.Warning(ex, "Error sending telemetry data to '{Endpoint}'", GetEndpointInfo());
                 return TelemetryPushResult.TransientFailure;
             }
         }

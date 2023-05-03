@@ -46,7 +46,7 @@ internal static class AgentTransportStrategy
         switch (strategy)
         {
             case TracesTransportType.WindowsNamedPipe:
-                Log.Information<string, string?, int>("Using " + nameof(NamedPipeClientStreamFactory) + " for {ProductName} transport, with pipe name {TracesPipeName} and timeout {TracesPipeTimeoutMs}ms.", productName, settings.TracesPipeName, settings.TracesPipeTimeoutMs);
+                Log.Debug<string, string?, int>("Using " + nameof(NamedPipeClientStreamFactory) + " for {ProductName} transport, with pipe name {TracesPipeName} and timeout {TracesPipeTimeoutMs}ms.", productName, settings.TracesPipeName, settings.TracesPipeTimeoutMs);
                 return new HttpStreamRequestFactory(
                     new NamedPipeClientStreamFactory(settings.TracesPipeName, settings.TracesPipeTimeoutMs),
                     new DatadogHttpClient(getHttpHeaderHelper()),
@@ -54,14 +54,14 @@ internal static class AgentTransportStrategy
 
             case TracesTransportType.UnixDomainSocket:
 #if NET5_0_OR_GREATER
-                Log.Information("Using " + nameof(SocketHandlerRequestFactory) + " for {ProductName} transport, with UDS path {Path}.", productName, settings.TracesUnixDomainSocketPath);
+                Log.Debug("Using " + nameof(SocketHandlerRequestFactory) + " for {ProductName} transport, with UDS path {Path}.", productName, settings.TracesUnixDomainSocketPath);
                 // use http://localhost as base endpoint
                 return new SocketHandlerRequestFactory(
                     new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPath),
                     defaultAgentHeaders,
                     getBaseEndpoint(Localhost));
 #elif NETCOREAPP3_1_OR_GREATER
-                Log.Information<string, string?, int>("Using " + nameof(UnixDomainSocketStreamFactory) + " for {ProductName} transport, with Unix Domain Sockets path {TracesUnixDomainSocketPath} and timeout {TracesPipeTimeoutMs}ms.", productName, settings.TracesUnixDomainSocketPath, settings.TracesPipeTimeoutMs);
+                Log.Debug<string, string?, int>("Using " + nameof(UnixDomainSocketStreamFactory) + " for {ProductName} transport, with Unix Domain Sockets path {TracesUnixDomainSocketPath} and timeout {TracesPipeTimeoutMs}ms.", productName, settings.TracesUnixDomainSocketPath, settings.TracesPipeTimeoutMs);
                 return new HttpStreamRequestFactory(
                     new UnixDomainSocketStreamFactory(settings.TracesUnixDomainSocketPath),
                     new DatadogHttpClient(getHttpHeaderHelper()),
@@ -73,10 +73,10 @@ internal static class AgentTransportStrategy
             case TracesTransportType.Default:
             default:
 #if NETCOREAPP
-                Log.Information("Using " + nameof(HttpClientRequestFactory) + " for {ProductName} transport.", productName);
+                Log.Debug("Using " + nameof(HttpClientRequestFactory) + " for {ProductName} transport.", productName);
                 return new HttpClientRequestFactory(getBaseEndpoint(settings.AgentUri), defaultAgentHeaders, timeout: tcpTimeout);
 #else
-                Log.Information("Using " + nameof(ApiWebRequestFactory) + " for {ProductName} transport.", productName);
+                Log.Debug("Using " + nameof(ApiWebRequestFactory) + " for {ProductName} transport.", productName);
                 return new ApiWebRequestFactory(getBaseEndpoint(settings.AgentUri), defaultAgentHeaders, timeout: tcpTimeout);
 #endif
         }

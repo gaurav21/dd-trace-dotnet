@@ -27,14 +27,14 @@ namespace Datadog.Trace.ClrProfiler
 
                 if (parent == null)
                 {
-                    Log.Information("Building automatic tracer");
+                    Log.Debug("Building automatic tracer");
                     Instance = new AutomaticTracer();
                 }
                 else
                 {
                     var parentTracer = parent.DuckCast<IAutomaticTracer>();
 
-                    Log.Information("Building manual tracer, connected to {Assembly}", parent.GetType().Assembly);
+                    Log.Debug("Building manual tracer, connected to {Assembly}", parent.GetType().Assembly);
 
                     Instance = new ManualTracer(parentTracer);
                 }

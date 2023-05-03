@@ -21,7 +21,7 @@ namespace Datadog.Trace.Processors
 
         public TruncatorTraceProcessor()
         {
-            Log.Information("TruncatorTraceProcessor initialized.");
+            Log.Debug("TruncatorTraceProcessor initialized.");
         }
 
         public ArraySegment<Span> Process(ArraySegment<Span> trace)

@@ -61,7 +61,7 @@ namespace Datadog.Trace
             {
                 if (DomainMetadata.Instance.ShouldAvoidAppDomain())
                 {
-                    Log.Information("Skipping process manager initialization for AppDomain: {AppDomain}", DomainMetadata.Instance.AppDomainName);
+                    Log.Debug("Skipping process manager initialization for AppDomain: {AppDomain}", DomainMetadata.Instance.AppDomainName);
                     return;
                 }
 
@@ -202,7 +202,7 @@ namespace Datadog.Trace
                                             }
 
                                             // The previous instance is gone, time to start the process
-                                            Log.Information("Recovering from previous {Process} shutdown. Ready for start.", path);
+                                            Log.Debug("Recovering from previous {Process} shutdown. Ready for start.", path);
                                             metadata.ProcessState = ProcessState.ReadyToStart;
                                             break;
                                         }
@@ -221,7 +221,7 @@ namespace Datadog.Trace
 
                                 if (metadata.ProcessState == ProcessState.ReadyToStart)
                                 {
-                                    Log.Information("Attempting to start {Process}.", path);
+                                    Log.Debug("Attempting to start {Process}.", path);
 
                                     var startInfo = new ProcessStartInfo
                                     {
@@ -244,7 +244,7 @@ namespace Datadog.Trace
                                         {
                                             metadata.SequentialFailures = 0;
                                             metadata.ProcessState = ProcessState.Healthy;
-                                            Log.Information("Successfully started {Process}.", path);
+                                            Log.Debug("Successfully started {Process}.", path);
                                             break;
                                         }
 
@@ -349,7 +349,7 @@ namespace Datadog.Trace
                         return true;
                     }
 
-                    Log.Information("Program [{Process}] is no longer running", ProcessPath);
+                    Log.Debug("Program [{Process}] is no longer running", ProcessPath);
 
                     return false;
                 }

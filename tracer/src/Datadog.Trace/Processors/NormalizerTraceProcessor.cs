@@ -30,7 +30,7 @@ namespace Datadog.Trace.Processors
 
         public NormalizerTraceProcessor()
         {
-            Log.Information("NormalizerTraceProcessor initialized.");
+            Log.Debug("NormalizerTraceProcessor initialized.");
         }
 
         public ArraySegment<Span> Process(ArraySegment<Span> trace)
