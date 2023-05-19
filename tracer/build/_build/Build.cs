@@ -204,6 +204,16 @@ partial class Build : NukeBuild
         .DependsOn(CompileIntegrationTests)
         .DependsOn(BuildRunnerTool);
 
+    Target BuildWindowsSamplesPackageVersions => _ => _
+        .Unlisted()
+        .Requires(() => IsWin)
+        .DependsOn(CompileDependencyLibs)
+        .DependsOn(CompileManagedTestHelpers)
+        .DependsOn(CompileSamplesWindowsPackageVersions)
+        .DependsOn(CompileSamplesWindows) // TODO hack for now to restore all other samples that aren't PackageVersion ones (for CompileIntegrationTests)
+        .DependsOn(CompileIntegrationTests)
+        .DependsOn(BuildRunnerTool);
+
     Target BuildAspNetIntegrationTests => _ => _
         .Unlisted()
         .Requires(() => IsWin)
@@ -228,6 +238,12 @@ partial class Build : NukeBuild
         .Description("Builds and runs the Windows (non-IIS) integration tests")
         .DependsOn(BuildWindowsIntegrationTests)
         .DependsOn(RunWindowsIntegrationTests);
+
+    Target BuildAndRunWindowsIntegrationTestsPackageVersions => _ => _
+        .Requires(() => IsWin)
+        .Description("Builds and runs the Windows (non-IIS) integration tests that specify multiple package versions of their NuGet")
+        .DependsOn(BuildWindowsSamplesPackageVersions)
+        .DependsOn(RunWindowsIntegrationTestsPackageVersions);
 
     Target BuildAndRunWindowsRegressionTests => _ => _
         .Requires(() => IsWin)
