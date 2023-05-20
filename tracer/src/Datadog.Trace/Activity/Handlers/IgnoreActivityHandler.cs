@@ -6,7 +6,6 @@
 #nullable enable
 
 using Datadog.Trace.Activity.DuckTypes;
-using Datadog.Trace.Util;
 
 namespace Datadog.Trace.Activity.Handlers
 {

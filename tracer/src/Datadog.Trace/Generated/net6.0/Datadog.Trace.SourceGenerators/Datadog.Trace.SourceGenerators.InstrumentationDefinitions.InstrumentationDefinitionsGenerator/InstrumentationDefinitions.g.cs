@@ -68,6 +68,10 @@ namespace Datadog.Trace.ClrProfiler
                new ("Microsoft.Azure.WebJobs.Script.Grpc", "Microsoft.Azure.WebJobs.Script.Grpc.GrpcMessageConversionExtensions", "ToRpcHttp",  new[] { "System.Threading.Tasks.Task`1[Microsoft.Azure.WebJobs.Script.Grpc.Messages.TypedData]", "Microsoft.AspNetCore.Http.HttpRequest", "Microsoft.Extensions.Logging.ILogger", "Microsoft.Azure.WebJobs.Script.Grpc.GrpcCapabilities" }, 4, 0, 0, 4, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.Functions.GrpcMessageConversionExtensionsToRpcHttpIntegration"),
                new ("Microsoft.Azure.WebJobs.Script.WebHost", "Microsoft.Azure.WebJobs.Script.WebHost.Middleware.FunctionInvocationMiddleware", "Invoke",  new[] { "System.Threading.Tasks.Task", "Microsoft.AspNetCore.Http.HttpContext" }, 3, 0, 0, 4, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.Functions.FunctionInvocationMiddlewareInvokeIntegration"),
 
+                // AzureServiceBus
+               new ("Azure.Messaging.ServiceBus", "Azure.Messaging.ServiceBus.ReceiverManager", "ProcessOneMessage",  new[] { "System.Threading.Tasks.Task", "Azure.Messaging.ServiceBus.ServiceBusReceivedMessage", "System.Threading.CancellationToken" }, 7, 14, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.ProcessMessageIntegration"),
+               new ("Azure.Messaging.ServiceBus", "Azure.Messaging.ServiceBus.ServiceBusSender", ".ctor",  new[] { "System.Void", "System.String", "Azure.Messaging.ServiceBus.ServiceBusConnection", "Azure.Messaging.ServiceBus.ServiceBusSenderOptions" }, 7, 14, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.ServiceBusSenderConstructorIntegration"),
+
                 // CosmosDb
                new ("Microsoft.Azure.Cosmos.Client", "Microsoft.Azure.Cosmos.ContainerCore", "GetItemQueryIterator",  new[] { "Microsoft.Azure.Cosmos.FeedIterator`1<T>", "Microsoft.Azure.Cosmos.QueryDefinition", "System.String", "Microsoft.Azure.Cosmos.QueryRequestOptions" }, 3, 6, 0, 3, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.CosmosDb.ContainerQueryIteratorsIntegrations"),
                new ("Microsoft.Azure.Cosmos.Client", "Microsoft.Azure.Cosmos.ContainerCore", "GetItemQueryIterator",  new[] { "Microsoft.Azure.Cosmos.FeedIterator`1<T>", "System.String", "System.String", "Microsoft.Azure.Cosmos.QueryRequestOptions" }, 3, 6, 0, 3, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.CosmosDb.ContainerQueryIteratorsIntegrations"),
@@ -479,6 +483,9 @@ namespace Datadog.Trace.ClrProfiler
                new ("System.Data.Common", "System.Data.Common.DbCommand", "ExecuteNonQuery",  new[] { "System.Int32" }, 4, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AdoNet.CommandExecuteNonQueryIntegration"),
                new ("System.Data.Common", "System.Data.Common.DbCommand", "ExecuteScalar",  new[] { "System.Object" }, 4, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AdoNet.CommandExecuteScalarIntegration"),
 
+                // AzureServiceBus
+               new ("Azure.Messaging.ServiceBus", "Azure.Messaging.ServiceBus.Core.TransportSender", "SendAsync",  new[] { "System.Threading.Tasks.Task", "System.Collections.Generic.IReadOnlyCollection`1[Azure.Messaging.ServiceBus.ServiceBusMessage]", "System.Threading.CancellationToken" }, 7, 14, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.TransportSenderSendAsyncIntegration"),
+
                 // NUnit
                new ("nunit.framework", "NUnit.Framework.Internal.Commands.TestCommand", "Execute",  new[] { "NUnit.Framework.Internal.TestResult", "NUnit.Framework.Internal.TestExecutionContext" }, 3, 0, 0, 3, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Testing.NUnit.NUnitTestCommandExecuteIntegration"),
                new ("nunit.framework", "NUnit.Framework.Internal.Execution.WorkItem", "PerformWork",  new[] { "System.Void" }, 3, 0, 0, 3, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Testing.NUnit.NUnitWorkItemPerformWorkIntegration"),
@@ -607,6 +614,10 @@ namespace Datadog.Trace.ClrProfiler
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.Functions.GrpcMessageConversionExtensionsToRpcHttpIntegration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.Functions.FunctionInvocationMiddlewareInvokeIntegration"
                     => Datadog.Trace.Configuration.IntegrationId.AzureFunctions,
+                "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.TransportSenderSendAsyncIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.ProcessMessageIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Azure.ServiceBus.ServiceBusSenderConstructorIntegration"
+                    => Datadog.Trace.Configuration.IntegrationId.AzureServiceBus,
                 "Datadog.Trace.ClrProfiler.AutoInstrumentation.CosmosDb.ContainerQueryIteratorsIntegrations"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.CosmosDb.ContainerQueryIteratorsIntegrations"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.CosmosDb.ContainerQueryIteratorsIntegrations"
