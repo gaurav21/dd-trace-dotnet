@@ -16,8 +16,6 @@ namespace Datadog.Trace.Activity.Handlers
             new IgnoreActivityHandler(),
 
             // Azure Service Bus handlers
-            new AzureServiceBusSenderActivityHandler(),
-            new AzureServiceBusReceiverActivityHandler(),
             new AzureServiceBusActivityHandler(),
 
             // The default handler catches an activity and creates a datadog span from it.

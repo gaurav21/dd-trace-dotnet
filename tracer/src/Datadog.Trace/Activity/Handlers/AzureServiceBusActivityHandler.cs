@@ -10,8 +10,8 @@ using Datadog.Trace.Activity.DuckTypes;
 namespace Datadog.Trace.Activity.Handlers
 {
     /// <summary>
-    /// The Activity handler that catches an activity from Azure Service Bus,
-    /// creates a datadog span from it, and performs additional customized instrumentation.
+    /// This Activity handler captures the "Message" Activity objects, whose span context
+    /// is injected into the AzureServiceBus message's properties.
     /// </summary>
     internal class AzureServiceBusActivityHandler : IActivityHandler
     {
@@ -22,7 +22,7 @@ namespace Datadog.Trace.Activity.Handlers
             where T : IActivity
         {
             ActivityHandlerCommon.ActivityStarted(sourceName, activity, out var activityMapping);
-            // W3CTraceContextPropagator.CreateTraceStateHeader(activityMapping.Scope.Span.Context);
+            // TODO: Update the Activity's traceparent and/or tracestate strings here
         }
 
         public void ActivityStopped<T>(string sourceName, T activity)
