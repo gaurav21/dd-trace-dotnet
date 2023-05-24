@@ -75,6 +75,12 @@ namespace Datadog.Trace.Configuration
             /// Blocking response template for Json content. This template is used in combination with the status code to craft and send a response upon blocking the request.
             /// </summary>
             internal const string JsonBlockedTemplate = "DD_APPSEC_HTTP_BLOCKED_TEMPLATE_JSON";
+
+            /// <summary>
+            /// Configuration key to enabling or disabling the collection of shell commands executions.
+            /// Default is value is false (disabled).
+            /// </summary>
+            internal const string EnableShellCollection = "DD_APPSEC_ENABLE_SHELL_COLLECTION";
         }
     }
 }
