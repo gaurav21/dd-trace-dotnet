@@ -2,12 +2,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Samples.Security.AspNetCore5.Data;
 using Samples.Security.AspNetCore5.Endpoints;
+using Samples.Security.AspNetCore5.IdentityStores;
+using SQLitePCL;
 
 namespace Samples.Security.AspNetCore5
 {
@@ -18,7 +20,7 @@ namespace Samples.Security.AspNetCore5
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -28,7 +30,29 @@ namespace Samples.Security.AspNetCore5
             {
                 DatabaseHelper.CreateAndFeedDatabase(Configuration.GetConnectionString("DefaultConnection"));
             }
+
             services.AddRazorPages();
+            var identityBuilder = services.AddIdentity<IdentityUser, IdentityRole>(
+                o =>
+                {
+                    o.Password.RequireDigit = false;
+                    o.Password.RequiredLength = 4;
+                    o.Password.RequireLowercase = false;
+                    o.Password.RequiredUniqueChars = 0;
+                    o.Password.RequireUppercase = false;
+                    o.Password.RequireNonAlphanumeric = false;
+                });
+            identityBuilder.AddRoleStore<RoleStore>();
+            var useSqlLite = Configuration.GetValue<bool?>("UseSqllite");
+            if (useSqlLite ?? false)
+            {
+                raw.SetProvider(new SQLite3Provider_e_sqlite3());
+                identityBuilder.AddUserStore<UserStoreSqlLite>();
+            }
+            else
+            {
+                identityBuilder.AddUserStore<UserStoreMemory>();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,52 +66,61 @@ namespace Samples.Security.AspNetCore5
             {
                 // todo, for now disable to test that the block exception isn't caught by the call target integrations. 
                 // later an exception filter should be added closer to the mvc pipeline so that this can't trigger because of a BlockException
-                
+
                 // app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
             app.UseAuthorization();
-
-            app.Map("/alive-check", builder =>
-            {
-                builder.Run(async context =>
+            app.UseAuthentication();
+            app.Map(
+                "/alive-check",
+                builder =>
                 {
-                    await context.Response.WriteAsync("Yes");
+                    builder.Run(
+                        async context =>
+                        {
+                            await context.Response.WriteAsync("Yes");
+                        });
                 });
-            });
 
-            app.Map("/shutdown", builder =>
-            {
-                builder.Run(async context =>
+            app.Map(
+                "/shutdown",
+                builder =>
                 {
-                    await context.Response.WriteAsync("Shutting down");
-                    _ = Task.Run(() => builder.ApplicationServices.GetService<IHostApplicationLifetime>().StopApplication());
+                    builder.Run(
+                        async context =>
+                        {
+                            await context.Response.WriteAsync("Shutting down");
+                            _ = Task.Run(() => builder.ApplicationServices.GetService<IHostApplicationLifetime>().StopApplication());
+                        });
                 });
-            });
 
-            app.Use(async (context, next) =>
-            {
-                // make sure if we go into this middleware after blocking has happened that it s not a second request issued by the developerhandlingpage middleware! if it s that no worries it s another request, not the attack one., its  a redirect.
-                // await context.Response.WriteAsync("do smth before all");
-                await next.Invoke();
-            });
-           
+            app.Use(
+                async (context, next) =>
+                {
+                    // make sure if we go into this middleware after blocking has happened that it s not a second request issued by the developerhandlingpage middleware! if it s that no worries it s another request, not the attack one., its  a redirect.
+                    // await context.Response.WriteAsync("do smth before all");
+                    await next.Invoke();
+                });
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.RegisterEndpointsRouting();
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                endpoints.MapRazorPages();
-            });
+            app.UseEndpoints(
+                endpoints =>
+                {
+                    endpoints.RegisterEndpointsRouting();
+                    endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                    endpoints.MapRazorPages();
+                });
         }
     }
 }

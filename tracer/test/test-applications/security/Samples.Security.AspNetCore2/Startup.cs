@@ -3,9 +3,13 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Samples.Security.AspNetCore5.Data;
+using Samples.Security.AspNetCore5.IdentityStores;
+using SQLitePCL;
 
 namespace Samples.Security.AspNetCore2
 {
@@ -33,6 +37,31 @@ namespace Samples.Security.AspNetCore2
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            if (Configuration.GetValue<bool>("CreateDb"))
+            {
+                DatabaseHelper.CreateAndFeedDatabase(Configuration.GetConnectionString("DefaultConnection"));
+            }
+            var identityBuilder = services.AddIdentity<IdentityUser, IdentityRole>(
+                o =>
+                {
+                    o.Password.RequireDigit = false;
+                    o.Password.RequiredLength = 4;
+                    o.Password.RequireLowercase = false;
+                    o.Password.RequiredUniqueChars = 0;
+                    o.Password.RequireUppercase = false;
+                    o.Password.RequireNonAlphanumeric = false;
+                });
+            identityBuilder.AddRoleStore<RoleStore>();
+            var useSqlLite = Configuration.GetValue<bool?>("UseSqllite");
+            if (useSqlLite ?? false)
+            {
+                raw.SetProvider(new SQLite3Provider_e_sqlite3());
+                identityBuilder.AddUserStore<UserStoreSqlLite>();
+            }
+            else
+            {
+                identityBuilder.AddUserStore<UserStoreMemory>();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,7 +88,7 @@ namespace Samples.Security.AspNetCore2
                     _ = Task.Run(() => builder.ApplicationServices.GetService<IApplicationLifetime>().StopApplication());
                 });
             });
-
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
