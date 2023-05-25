@@ -442,7 +442,10 @@ namespace Datadog.Trace.ClrProfiler
                 {
 
                     // AspNetCore
+                    new ("Microsoft.AspNetCore.Identity", "Microsoft.AspNetCore.Identity.SignInManager`1", "PasswordSignInAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.SignInResult]", "System.String", "System.String", "System.Boolean", "System.Boolean" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInIntegration"),
+                    new ("Microsoft.AspNetCore.Identity", "Microsoft.AspNetCore.Identity.SignInManager`1", "PasswordSignInAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.SignInResult]", "!0", "System.String", "System.Boolean", "System.Boolean" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInUserIntegration"),
                     new ("Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc.ModelBinding.DefaultModelBindingContext", "set_Result",  new[] { "System.Void", "Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"),
+                    new ("Microsoft.Extensions.Identity.Core", "Microsoft.AspNetCore.Identity.UserManager`1", "CreateAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.IdentityResult]", "!0" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.UserManagerCreateIntegration"),
                     new ("Microsoft.AspNetCore.Server.IIS", "Microsoft.AspNetCore.Server.IIS.Core.IISHttpContext", "FireOnStarting",  new[] { "System.Threading.Tasks.Task" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.FireOnStartCommon"),
                     new ("Microsoft.AspNetCore.Server.Kestrel.Core", "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol", "FireOnStarting",  new[] { "System.Threading.Tasks.Task" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.FireOnStartCommon"),
                 }
@@ -517,7 +520,10 @@ namespace Datadog.Trace.ClrProfiler
                 {
 
                     // AspNetCore
+                    new ("Microsoft.AspNetCore.Identity", "Microsoft.AspNetCore.Identity.SignInManager`1", "PasswordSignInAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.SignInResult]", "System.String", "System.String", "System.Boolean", "System.Boolean" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInIntegration"),
+                    new ("Microsoft.AspNetCore.Identity", "Microsoft.AspNetCore.Identity.SignInManager`1", "PasswordSignInAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.SignInResult]", "System.String", "System.String", "System.Boolean", "System.Boolean" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInUserIntegration"),
                     new ("Microsoft.AspNetCore.Mvc.Core", "Microsoft.AspNetCore.Mvc.ModelBinding.DefaultModelBindingContext", "set_Result",  new[] { "System.Void", "Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"),
+                    new ("Microsoft.Extensions.Identity.Core", "Microsoft.AspNetCore.Identity.UserManager`1", "CreateAsync",  new[] { "System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Identity.IdentityResult]", "!0" }, 2, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.UserManagerCreateIntegration"),
                 }
             };
 
@@ -611,10 +617,16 @@ namespace Datadog.Trace.ClrProfiler
                     => Datadog.Trace.Configuration.IntegrationId.Aerospike,
                 "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.AspNetCoreBlockMiddlewareIntegrationEnd"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.AspNetCoreBlockMiddlewareIntegrationEnd"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInUserIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.SignInManagerPasswordSignInUserIntegration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.DefaultModelBindingContext_SetResult_Integration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.UserManagerCreateIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents.UserManagerCreateIntegration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.FireOnStartCommon"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.FireOnStartCommon"
                     => Datadog.Trace.Configuration.IntegrationId.AspNetCore,
