@@ -343,6 +343,11 @@ namespace Datadog.Trace.TestHelpers
                 .Matches(Type, "system"))
             .Tags(s => s
                 .IsOptional("cmd.environment_variables")
+                .IsOptional("cmd.exit_code")
+                .IsOptional("cmd.exec")
+                .IsOptional("cmd.shell")
+                .IsOptional("cmd.truncated")
+                .Matches("cmd.component", "process")
                 .Matches("span.kind", "internal"));
 
         public static Result IsRabbitMQV1(this MockSpan span) => Result.FromSpan(span)
