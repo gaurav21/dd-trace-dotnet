@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
 
 /// <summary>
-/// aspnet core IApplicationBuilder
+/// Duck type of the SignInResult aspnet core type
 /// </summary>
 [Browsable(false)]
 [EditorBrowsable(EditorBrowsableState.Never)]

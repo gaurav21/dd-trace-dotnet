@@ -15,7 +15,7 @@ using Datadog.Trace.Configuration;
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
 
 /// <summary>
-/// UserManagerCreateIntegration
+/// UserManagerCreateIntegration for sign up events
 /// </summary>
 [InstrumentMethod(
     AssemblyName = AssemblyName,

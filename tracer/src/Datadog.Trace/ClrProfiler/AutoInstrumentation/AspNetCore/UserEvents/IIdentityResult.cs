@@ -8,14 +8,14 @@ using System.ComponentModel;
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
 
 /// <summary>
-/// aspnet core IApplicationBuilder
+/// Duck type of the IdentityResult aspnet core type
 /// </summary>
 [Browsable(false)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IIdentityResult
 {
     /// <summary>
-    /// Gets a value indicating whether the sign-in was successful.
+    /// Gets a value indicating whether indicating a successful identity operation.
     /// </summary>
     public bool Succeeded { get; }
 }

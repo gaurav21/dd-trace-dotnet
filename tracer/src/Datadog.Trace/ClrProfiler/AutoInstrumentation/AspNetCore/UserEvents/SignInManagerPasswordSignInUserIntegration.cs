@@ -15,7 +15,7 @@ using Datadog.Trace.Configuration;
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
 
 /// <summary>
-/// SignInManagerIntegration
+/// SignInManagerIntegration for when the user has been found, but need to check password
 /// </summary>
 [InstrumentMethod(
     AssemblyName = AssemblyName,
