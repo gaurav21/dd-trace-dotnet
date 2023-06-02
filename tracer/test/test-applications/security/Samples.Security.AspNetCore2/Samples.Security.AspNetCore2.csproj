@@ -20,6 +20,8 @@
     <Compile Include="..\Samples.Security.AspNetCore5\Data\**\*.cs" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\Samples.Security.AspNetCore5\Models\**\*.*" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\Samples.Security.AspNetCore5\IdentityStores\**\*.*" Link="IdentityStores\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\Samples.Security.AspNetCore5\Extensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Samples.Security.AspNetCore5\Data\**\*.db-*" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="..\Samples.Security.AspNetCore5\Data\**\*.db" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="..\Samples.Security.AspNetCore5\Views\**\*.*" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Update="appsettings.Development.json">

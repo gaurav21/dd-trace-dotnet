@@ -48,8 +48,8 @@ namespace Samples.Security.AspNetCore5.Data
         
         public static IImmutableList<dynamic> SelectDynamic(IConfiguration configuration, string query)
         {
-            var connString = configuration.GetConnectionString("DefaultConnection");
-            using var conn = DatabaseHelper.GetConnectionForDb(connString);
+            var connString = configuration.GetDefaultConnectionString();
+            using var conn = GetConnectionForDb(connString);
             conn!.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = query;
@@ -73,8 +73,8 @@ namespace Samples.Security.AspNetCore5.Data
         
         public static int ExecuteNonQuery(IConfiguration configuration, string query)
         {
-            var connString = configuration.GetConnectionString("DefaultConnection");
-            using var conn = DatabaseHelper.GetConnectionForDb(connString);
+            var connString = configuration.GetDefaultConnectionString();
+            using var conn = GetConnectionForDb(connString);
             conn!.Open();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = query;

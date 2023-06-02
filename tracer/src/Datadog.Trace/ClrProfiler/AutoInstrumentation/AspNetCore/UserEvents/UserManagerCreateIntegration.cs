@@ -52,8 +52,7 @@ public static class UserManagerCreateIntegration
         {
             var tracer = Tracer.Instance;
             var scope = tracer.InternalActiveScope;
-            var targetState = new UserState { UserId = user.Id.ToString() };
-            return new CallTargetState(scope, targetState);
+            return new CallTargetState(scope, user.Id);
         }
 
         return CallTargetState.GetDefault();
@@ -67,12 +66,9 @@ public static class UserManagerCreateIntegration
         {
             var span = state.Scope.Span;
             var setTag = TaggingUtils.GetSpanSetter(span, out _);
-            if (state.State is UserState userState)
+            if (state.State is Guid)
             {
-                if (string.IsNullOrEmpty(span.GetTag(Tags.User.Id)) && userState.IsUserIdGuid())
-                {
-                    setTag(Tags.User.Id, userState.UserId);
-                }
+                setTag(Tags.User.Id, state.State.ToString());
             }
 
             if (returnValue.Succeeded)

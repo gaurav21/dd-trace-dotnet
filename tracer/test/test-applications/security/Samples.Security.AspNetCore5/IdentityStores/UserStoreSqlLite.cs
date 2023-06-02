@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -70,7 +71,7 @@ public class UserStoreSqlLite : UserStoreBase<IdentityUser, string, IdentityUser
 
     public override Task<IdentityResult> CreateAsync(IdentityUser user, CancellationToken cancellationToken = new CancellationToken())
     {
-        var res = DatabaseHelper.ExecuteNonQuery(_configuration, $"insert into AspNetUsers(Id, Email, EmailConfirmed, PasswordHash, TwoFactorEnabled, UserName, PhoneNumberConfirmed, LockoutEnabled, AccessFailedCount ) Values ('{Guid.NewGuid().ToString()}', '{user.NormalizedEmail}', '{(user.EmailConfirmed ? 1 : 0)}', '{user.PasswordHash}', {(user.TwoFactorEnabled ? 1 : 0)}, '{user.NormalizedUserName}', '0', 1, 0)");
+        var res = DatabaseHelper.ExecuteNonQuery(_configuration, $"insert into AspNetUsers(Id, Email, NormalizedEmail, EmailConfirmed, PasswordHash, TwoFactorEnabled, UserName, NormalizedUserName, PhoneNumberConfirmed, LockoutEnabled, AccessFailedCount ) Values ('{Guid.NewGuid().ToString()}', '{user.Email}', '{user.NormalizedEmail}', '{(user.EmailConfirmed ? 1 : 0)}', '{user.PasswordHash}', {(user.TwoFactorEnabled ? 1 : 0)}, '{user.UserName}', '{user.NormalizedUserName}', '0', 1, 0)");
         return Task.FromResult(res == 1 ? IdentityResult.Success : IdentityResult.Failed());
     }
 
@@ -82,11 +83,11 @@ public class UserStoreSqlLite : UserStoreBase<IdentityUser, string, IdentityUser
     public override Task<IdentityUser> FindByIdAsync(string userId, CancellationToken cancellationToken = new CancellationToken())
     {
         var rows = DatabaseHelper.SelectDynamic(_configuration, $@"select * from AspNetUsers where Id = '{userId}'");
-
-        var res = rows.FirstOrDefault();
-        if (res != null)
+        var first = rows.FirstOrDefault();
+        if (first is not null)
         {
-            return Task.FromResult(new IdentityUser { Email = res["Email"], Id = res["Id"] });
+            var item = (IDictionary<string, object>)first;
+            return Task.FromResult(new IdentityUser { Email = item["Email"]?.ToString(), Id = item["Id"]?.ToString() });
         }
 
         return null;
@@ -99,7 +100,7 @@ public class UserStoreSqlLite : UserStoreBase<IdentityUser, string, IdentityUser
 
     public override Task<IdentityUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
     {
-        var rows = DatabaseHelper.SelectDynamic(_configuration, $@"select * from AspNetUsers where userName = '{normalizedUserName}'");
+        var rows = DatabaseHelper.SelectDynamic(_configuration, $@"select * from AspNetUsers where NormalizedUserName = '{normalizedUserName}'");
 
         var res = rows.FirstOrDefault();
         if (res is IDictionary<string, object> user)

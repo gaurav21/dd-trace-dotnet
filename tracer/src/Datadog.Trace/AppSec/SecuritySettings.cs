@@ -65,7 +65,14 @@ namespace Datadog.Trace.AppSec
                                             .WithKeys(ConfigurationKeys.AppSec.ObfuscationParameterValueRegex)
                                             .AsString(SecurityConstants.ObfuscationParameterValueRegexDefault, x => !string.IsNullOrWhiteSpace(x));
 
-            UserEventsAutomatedTracking = config.WithKeys(ConfigurationKeys.AppSec.UserEventsAutomatedTracking).AsString("safe");
+            UserEventsAutomatedTracking = config
+                                         .WithKeys(ConfigurationKeys.AppSec.UserEventsAutomatedTracking)
+                                         .AsString(
+                                              "safe",
+                                              val => val.Equals("safe", StringComparison.OrdinalIgnoreCase)
+                                                  || val.Equals("disabled", StringComparison.OrdinalIgnoreCase)
+                                                  || val.Equals("extended", StringComparison.OrdinalIgnoreCase))
+                                         .ToLowerInvariant();
         }
 
         public bool Enabled { get; }

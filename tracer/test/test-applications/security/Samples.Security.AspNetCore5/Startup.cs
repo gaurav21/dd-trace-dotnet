@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+#if NET7_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -42,16 +45,23 @@ namespace Samples.Security.AspNetCore5
                     o.Password.RequireUppercase = false;
                     o.Password.RequireNonAlphanumeric = false;
                 });
-            identityBuilder.AddRoleStore<RoleStore>();
-            var useSqlLite = Configuration.GetValue<bool?>("UseSqllite");
-            if (useSqlLite ?? false)
+            var useSqlLite = Configuration.GetValue("UseSqlite", true);
+            if (useSqlLite)
             {
+#if NET7_0_OR_GREATER
+                services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(Configuration.GetDefaultConnectionString()));
+                identityBuilder.AddEntityFrameworkStores<ApplicationDbContext>();
+#else
                 raw.SetProvider(new SQLite3Provider_e_sqlite3());
                 identityBuilder.AddUserStore<UserStoreSqlLite>();
+                identityBuilder.AddRoleStore<RoleStore>();
+#endif
             }
             else
             {
+
                 identityBuilder.AddUserStore<UserStoreMemory>();
+                identityBuilder.AddRoleStore<RoleStore>();
             }
         }
 

@@ -51,7 +51,7 @@ namespace Datadog.Trace.Security.IntegrationTests
             var url = "/Account/Index";
             var settings = VerifyHelper.GetSpanVerifierSettings(eventName, bodyString);
             await TestAppSecRequestWithVerifyAsync(agent, url, bodyString, 5, 1, settings, contentType: "application/x-www-form-urlencoded", methodNameOverride: nameof(TestUserLoginEvent));
-            // reset memory database
+            // reset memory database (useless for net7 as it runs with EF7 on app.db
             await SendRequestsAsync(this.Fixture.Agent, "/account/reset-memory-db");
         }
 

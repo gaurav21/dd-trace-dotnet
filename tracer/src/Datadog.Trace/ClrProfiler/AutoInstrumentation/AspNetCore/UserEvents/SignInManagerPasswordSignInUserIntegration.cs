@@ -10,6 +10,7 @@ using System.ComponentModel;
 using Datadog.Trace.AppSec;
 using Datadog.Trace.ClrProfiler.CallTarget;
 using Datadog.Trace.Configuration;
+using Datadog.Trace.DuckTyping;
 
 #if !NETFRAMEWORK
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
@@ -44,7 +45,7 @@ public static class SignInManagerPasswordSignInUserIntegration
 {
     private const string AssemblyName = "Microsoft.AspNetCore.Identity";
 
-    internal static CallTargetState OnMethodBegin<TTarget, TUser>(TTarget instance, TUser? user, string password, bool isPersistent, bool lockoutOnFailure)
+    internal static CallTargetState OnMethodBegin<TTarget, TUser>(TTarget instance, TUser user, string password, bool isPersistent, bool lockoutOnFailure)
         where TUser : IIdentityUser
     {
         var security = Security.Instance;
@@ -53,8 +54,7 @@ public static class SignInManagerPasswordSignInUserIntegration
         {
             var tracer = Tracer.Instance;
             var scope = tracer.InternalActiveScope;
-            var targetState = new UserState { UserId = user?.Id.ToString(), Exists = user != null };
-            return new CallTargetState(scope, targetState);
+            return new CallTargetState(scope, user);
         }
 
         return CallTargetState.GetDefault();
@@ -66,8 +66,10 @@ public static class SignInManagerPasswordSignInUserIntegration
         var security = Security.Instance;
         if (security.TrackUserEvents)
         {
+            var userExists = (state.State as IDuckType)?.Instance != null;
+            var newCallTargetState = new CallTargetState(state.Scope, (state.State as IIdentityUser)?.Id);
             // if we come here, it's that the user has been found in database
-            SignInHelper.FillSpanWithUserEvent(security, state, returnValue);
+            SignInHelper.FillSpanWithUserEvent(security, in newCallTargetState, returnValue, userExists);
         }
 
         return returnValue;

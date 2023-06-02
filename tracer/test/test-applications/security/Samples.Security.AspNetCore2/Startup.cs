@@ -39,7 +39,7 @@ namespace Samples.Security.AspNetCore2
             services.AddMvc();
             if (Configuration.GetValue<bool>("CreateDb"))
             {
-                DatabaseHelper.CreateAndFeedDatabase(Configuration.GetConnectionString("DefaultConnection"));
+                DatabaseHelper.CreateAndFeedDatabase(Configuration.GetDefaultConnectionString());
             }
             var identityBuilder = services.AddIdentity<IdentityUser, IdentityRole>(
                 o =>
@@ -52,7 +52,7 @@ namespace Samples.Security.AspNetCore2
                     o.Password.RequireNonAlphanumeric = false;
                 });
             identityBuilder.AddRoleStore<RoleStore>();
-            var useSqlLite = Configuration.GetValue<bool?>("UseSqllite");
+            var useSqlLite = Configuration.GetValue<bool?>("UseSqllite", true);
             if (useSqlLite ?? false)
             {
                 raw.SetProvider(new SQLite3Provider_e_sqlite3());

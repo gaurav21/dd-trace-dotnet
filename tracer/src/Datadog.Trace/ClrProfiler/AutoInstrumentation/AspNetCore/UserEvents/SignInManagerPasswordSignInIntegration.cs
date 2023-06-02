@@ -53,8 +53,7 @@ public static class SignInManagerPasswordSignInIntegration
         {
             var tracer = Tracer.Instance;
             var scope = tracer.InternalActiveScope;
-            var targetState = new UserState { UserId = user };
-            return new CallTargetState(scope, targetState);
+            return new CallTargetState(scope, user);
         }
 
         return CallTargetState.GetDefault();
@@ -66,7 +65,7 @@ public static class SignInManagerPasswordSignInIntegration
         var security = Security.Instance;
         if (security.TrackUserEvents)
         {
-            SignInHelper.FillSpanWithUserEvent(security, state, returnValue);
+            SignInHelper.FillSpanWithUserEvent(security, in state, returnValue);
         }
 
         return returnValue;
