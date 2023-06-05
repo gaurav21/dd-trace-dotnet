@@ -46,9 +46,8 @@ namespace Datadog.Trace.ClrProfiler.IntegrationTests
             telemetry.AssertIntegrationDisabled(IntegrationId.Process);
         }
 
-        protected async Task RunTest(string metadataSchemaVersion, string testName, bool collectCommands = false)
+        protected async Task RunTest(string metadataSchemaVersion, string testName, int expectedSpanCount, bool collectCommands = false)
         {
-            const int expectedSpanCount = 5;
             const string expectedOperationName = "command_execution";
 
             if (collectCommands)
@@ -76,14 +75,20 @@ namespace Datadog.Trace.ClrProfiler.IntegrationTests
                     $"{testName}.SubmitsTracesOsx" :
                     $"{testName}.SubmitsTraces";
 
-            if (collectCommands && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (collectCommands)
             {
-                // The collect command will have different spans depending on the dotnet version
-                // Because ArgumentList is not available in .NET Core 2.0 or .NET Framework
-                // and some tests are performed on ArgumentList
+                // Make sure the PATH name is the same in span for all OS
+                settings.AddSimpleScrubber("PATH=testPath", "Path=testPath");
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // The collect command will have different spans depending on the dotnet version
+                    // Because ArgumentList is not available in .NET Core 2.0 or .NET Framework
+                    // and some tests are performed on ArgumentList
 #if !NETCOREAPP3_1_OR_GREATER
-                filename += ".netfxOrNetCore2";
+                    filename += ".netfxOrNetCore2";
 #endif
+                }
             }
 
             await VerifyHelper.VerifySpans(spans, settings)
