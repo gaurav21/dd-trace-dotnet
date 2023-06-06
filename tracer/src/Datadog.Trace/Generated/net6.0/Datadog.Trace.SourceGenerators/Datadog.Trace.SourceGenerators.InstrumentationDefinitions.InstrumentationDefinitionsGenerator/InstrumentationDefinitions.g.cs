@@ -272,7 +272,8 @@ namespace Datadog.Trace.ClrProfiler
                     // NLog
                     new ("NLog", "NLog.LogFactory", "BuildLoggerConfiguration",  new[] { "System.Void", "System.String", "NLog.Config.LoggingConfiguration" }, 5, 0, 0, 5, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.DirectSubmission.LogFactoryGetConfigurationForLoggerInstrumentation"),
                     new ("NLog", "NLog.LogFactory", "GetConfigurationForLogger",  new[] { "System.Void", "System.String", "NLog.Config.LoggingConfiguration" }, 2, 1, 0, 4, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.DirectSubmission.LogFactoryGetConfigurationForLoggerInstrumentation"),
-                    new ("NLog", "NLog.LoggerImpl", "Write",  new[] { "System.Void", "System.Type", "NLog.Internal.TargetWithFilterChain", "NLog.LogEventInfo", "NLog.LogFactory" }, 1, 0, 0, 5, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegration"),
+                    new ("NLog", "NLog.LoggerImpl", "Write",  new[] { "System.Void", "System.Type", "NLog.Internal.TargetWithFilterChain", "NLog.LogEventInfo", "NLog.LogFactory" }, 1, 0, 0, 4, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegrationV4"),
+                    new ("NLog", "NLog.LoggerImpl", "Write",  new[] { "System.Void", "System.Type", "NLog.Internal.TargetWithFilterChain", "NLog.LogEventInfo", "NLog.LogFactory" }, 5, 0, 0, 5, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegrationV5"),
 
                     // Npgsql
                     new ("Npgsql", "Npgsql.NpgsqlCommand", "ExecuteDbDataReader",  new[] { "System.Data.Common.DbDataReader", "System.Data.CommandBehavior" }, 4, 0, 0, 7, 65535, 65535, assemblyFullName, "Datadog.Trace.ClrProfiler.AutoInstrumentation.AdoNet.CommandExecuteReaderWithBehaviorIntegration"),
@@ -796,7 +797,8 @@ namespace Datadog.Trace.ClrProfiler
                     => Datadog.Trace.Configuration.IntegrationId.MsTestV2,
                 "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.DirectSubmission.LogFactoryGetConfigurationForLoggerInstrumentation"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.DirectSubmission.LogFactoryGetConfigurationForLoggerInstrumentation"
-                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegration"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegrationV4"
+                    or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Logging.NLog.LogsInjection.LoggerImplWriteIntegrationV5"
                     => Datadog.Trace.Configuration.IntegrationId.NLog,
                 "Datadog.Trace.ClrProfiler.AutoInstrumentation.Testing.NUnit.NUnitTestCommandExecuteIntegration"
                     or "Datadog.Trace.ClrProfiler.AutoInstrumentation.Testing.NUnit.NUnitCompositeWorkItemPerformOneTimeSetUpIntegration"
