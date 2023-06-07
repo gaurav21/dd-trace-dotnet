@@ -114,23 +114,28 @@ internal static class DebuggerTestHelper
            .Select(m =>
             {
                 var probes = new List<(ProbeAttributeBase ProbeTestData, ProbeDefinition Probe)>();
-                var testAttribute = m.GetCustomAttribute<MethodProbeTestDataAttribute>().As<ProbeAttributeBase>();
+                var testAttributes = m.GetCustomAttributes<MethodProbeTestDataAttribute>().OfType<ProbeAttributeBase>().ToArray();
 
-                if (IsMetricProbe(testAttribute))
+                for (var testIndex = 0; testIndex < testAttributes.Length; testIndex++)
                 {
-                    probes.Add((testAttribute, CreateMetricMethodProbe(m, guidGenerator)));
-                }
-                else if (IsSpanProbe(testAttribute))
-                {
-                    probes.Add((testAttribute, CreateSpanMethodProbe(m, guidGenerator)));
-                }
-                else if (IsLogProbe(testAttribute))
-                {
-                    probes.Add((testAttribute, CreateLogMethodProbe(m, guidGenerator)));
-                }
-                else
-                {
-                    throw new InvalidOperationException($"Unknown probe type: {testAttribute.GetType()}");
+                    var testAttribute = testAttributes[testIndex];
+
+                    if (IsMetricProbe(testAttribute))
+                    {
+                        probes.Add((testAttribute, CreateMetricMethodProbe(m, guidGenerator, testIndex)));
+                    }
+                    else if (IsSpanProbe(testAttribute))
+                    {
+                        probes.Add((testAttribute, CreateSpanMethodProbe(m, guidGenerator, testIndex)));
+                    }
+                    else if (IsLogProbe(testAttribute))
+                    {
+                        probes.Add((testAttribute, CreateLogMethodProbe(m, guidGenerator, testIndex)));
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unknown probe type: {testAttribute.GetType()}");
+                    }
                 }
 
                 return probes;
@@ -275,9 +280,9 @@ internal static class DebuggerTestHelper
         return probe;
     }
 
-    private static ProbeDefinition CreateMetricMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator)
+    private static ProbeDefinition CreateMetricMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator, int testIndex)
     {
-        var probeTestData = GetProbeTestData(method, out var typeName) as MetricMethodProbeTestDataAttribute;
+        var probeTestData = GetProbeTestData(method, testIndex, out var typeName) as MetricMethodProbeTestDataAttribute;
 
         if (probeTestData == null || string.IsNullOrEmpty(probeTestData.MetricKind))
         {
@@ -287,9 +292,9 @@ internal static class DebuggerTestHelper
         return CreateBasicProbe<MetricProbe>(probeTestData.ProbeId ?? guidGenerator.New().ToString()).WithMetric(probeTestData).WithMethodWhere(typeName, method.Name, probeTestData);
     }
 
-    private static ProbeDefinition CreateSpanMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator)
+    private static ProbeDefinition CreateSpanMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator, int testIndex)
     {
-        var probeTestData = GetProbeTestData(method, out var typeName);
+        var probeTestData = GetProbeTestData(method, testIndex, out var typeName);
         if (probeTestData == null)
         {
             throw new InvalidOperationException("Probe attribute is null");
@@ -305,9 +310,9 @@ internal static class DebuggerTestHelper
         return isOptimized;
     }
 
-    private static ProbeDefinition CreateLogMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator)
+    private static ProbeDefinition CreateLogMethodProbe(MethodBase method, DeterministicGuidGenerator guidGenerator, int testIndex)
     {
-        var probeTestData = GetProbeTestData(method, out var typeName);
+        var probeTestData = GetProbeTestData(method, testIndex, out var typeName);
         if (probeTestData == null)
         {
             throw new InvalidOperationException("Probe attribute is null");
@@ -316,9 +321,9 @@ internal static class DebuggerTestHelper
         return CreateBasicProbe<LogProbe>(probeTestData.ProbeId ?? guidGenerator.New().ToString()).WithCapture(probeTestData.CaptureSnapshot).WithSampling().WithTemplate(probeTestData).WithWhen(probeTestData).WithMethodWhere(typeName, method.Name, probeTestData);
     }
 
-    private static MethodProbeTestDataAttribute GetProbeTestData(MethodBase method, out string typeName)
+    private static MethodProbeTestDataAttribute GetProbeTestData(MethodBase method, int testIndex, out string typeName)
     {
-        var probeTestData = method.GetCustomAttribute<MethodProbeTestDataAttribute>();
+        var probeTestData = method.GetCustomAttributes<MethodProbeTestDataAttribute>().ElementAt(testIndex);
         if (probeTestData == null)
         {
             throw new Xunit.Sdk.SkipException($"{nameof(MethodProbeTestDataAttribute)} has not found for method: {method.DeclaringType?.FullName}.{method.Name}");
@@ -360,8 +365,8 @@ internal static class DebuggerTestHelper
                    .Where(
                         m =>
                         {
-                            var att = m.GetCustomAttribute<T>();
-                            return att?.Skip == false && att.Unlisted == unlisted && att.SkipOnFrameworks.Contains(targetFramework) == false;
+                            var atts = m.GetCustomAttributes<T>();
+                            return atts.Any() && atts.All(att => att?.Skip == false && att.Unlisted == unlisted && att.SkipOnFrameworks.Contains(targetFramework) == false);
                         });
     }
 
