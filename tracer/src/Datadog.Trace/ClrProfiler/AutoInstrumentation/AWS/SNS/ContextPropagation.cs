@@ -16,18 +16,25 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
     {
         private const string SnsKey = "_datadog";
 
-        private static void Inject<TMessageRequest>(SpanContext context, IDictionary messageAttributes)
-        {
-            // Consolidate headers into one JSON object with <header_name>:<value>
-            var sb = Util.StringBuilderCache.Acquire(Util.StringBuilderCache.MaxBuilderSize);
-            sb.Append('{');
-            SpanContextPropagator.Instance.Inject(context, sb, default(StringBuilderCarrierSetter));
-            sb.Remove(startIndex: sb.Length - 1, length: 1); // Remove trailing comma
-            sb.Append('}');
+    private static void Inject<TMessageRequest>(SpanContext context, IDictionary messageAttributes)
+    {
+        // Consolidate headers into one JSON object with <header_name>:<value>
+        var sb = Util.StringBuilderCache.Acquire(Util.StringBuilderCache.MaxBuilderSize);
+        sb.Append('{');
+        SpanContextPropagator.Instance.Inject(context, sb, default(StringBuilderCarrierSetter));
+        sb.Remove(startIndex: sb.Length - 1, length: 1); // Remove trailing comma
+        sb.Append('}');
 
-            var resultString = Util.StringBuilderCache.GetStringAndRelease(sb);
-            messageAttributes[SnsKey] = CachedMessageHeadersHelper<TMessageRequest>.CreateMessageAttributeValue(resultString);
-        }
+        var resultString = Util.StringBuilderCache.GetStringAndRelease(sb);
+        var messageAttribute = CachedMessageHeadersHelper<TMessageRequest>.CreateMessageAttributeValue(resultString);
+
+        // assuming messageAttribute is an object that has DataType and BinaryValue properties
+        messageAttribute.DataType = "Binary";
+        messageAttribute.BinaryValue = resultString;
+
+        messageAttributes[SnsKey] = messageAttribute;
+    }
+
 
         public static void InjectHeadersIntoMessage<TMessageRequest>(IContainsMessageAttributes carrier, SpanContext spanContext)
         {
