@@ -41,7 +41,6 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
     InstrumentationCategory = InstrumentationCategory.AppSec)]
 [Browsable(false)]
 [EditorBrowsable(EditorBrowsableState.Never)]
-
 public static class SignInManagerPasswordSignInIntegration
 {
     private const string AssemblyName = "Microsoft.AspNetCore.Identity";
@@ -62,10 +61,9 @@ public static class SignInManagerPasswordSignInIntegration
     internal static TReturn OnAsyncMethodEnd<TTarget, TReturn>(TTarget instance, TReturn returnValue, Exception exception, in CallTargetState state)
         where TReturn : ISignInResult
     {
-        var security = Security.Instance;
-        if (security.TrackUserEvents)
+        if (!returnValue.Succeeded && Security.Instance is { TrackUserEvents: true } security)
         {
-            SignInHelper.FillSpanWithUserEvent(security, in state, returnValue);
+            SignInHelper.FillSpanWithFailureLoginEvent(security, in state, returnValue);
         }
 
         return returnValue;

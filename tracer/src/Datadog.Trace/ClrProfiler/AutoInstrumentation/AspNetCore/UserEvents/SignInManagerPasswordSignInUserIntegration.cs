@@ -63,13 +63,12 @@ public static class SignInManagerPasswordSignInUserIntegration
     internal static TReturn OnAsyncMethodEnd<TTarget, TReturn>(TTarget instance, TReturn returnValue, Exception exception, in CallTargetState state)
         where TReturn : ISignInResult
     {
-        var security = Security.Instance;
-        if (security.TrackUserEvents)
+        if (!returnValue.Succeeded && Security.Instance is { TrackUserEvents: true } security)
         {
-            var userExists = (state.State as IDuckType)?.Instance != null;
+            var userExists = (state.State as IDuckType)?.Instance is not null;
             var newCallTargetState = new CallTargetState(state.Scope, (state.State as IIdentityUser)?.Id);
             // if we come here, it's that the user has been found in database
-            SignInHelper.FillSpanWithUserEvent(security, in newCallTargetState, returnValue, userExists);
+            SignInHelper.FillSpanWithFailureLoginEvent(security, in newCallTargetState, returnValue, userExists);
         }
 
         return returnValue;

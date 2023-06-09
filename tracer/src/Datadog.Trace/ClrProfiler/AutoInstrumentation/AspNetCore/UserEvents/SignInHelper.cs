@@ -13,31 +13,19 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AspNetCore.UserEvents;
 
 internal static class SignInHelper
 {
-    internal static void FillSpanWithUserEvent<T>(Security security, in CallTargetState state, T returnValue, bool userExist = false)
+    internal static void FillSpanWithFailureLoginEvent<T>(Security security, in CallTargetState state, T returnValue, bool userExist = false)
         where T : ISignInResult
     {
         var span = state.Scope.Span;
         var setTag = TaggingUtils.GetSpanSetter(span, out _);
         var tryAddTag = TaggingUtils.GetSpanSetter(span, out _, replaceIfExists: false);
 
-        if (returnValue.Succeeded)
+        setTag(Tags.AppSec.EventsUsers.LoginEvent.FailureTrack, "true");
+        setTag(Tags.AppSec.EventsUsers.LoginEvent.FailureAutoMode, security.Settings.UserEventsAutomatedTracking);
+        tryAddTag(Tags.AppSec.EventsUsers.LoginEvent.FailureUserExists, userExist ? "true" : "false");
+        if (state.State is Guid || Guid.TryParse(state.State?.ToString(), out _))
         {
-            setTag(Tags.AppSec.EventsUsers.LoginEvent.SuccessTrack, "true");
-            setTag(Tags.AppSec.EventsUsers.LoginEvent.SuccessAutoMode, security.Settings.UserEventsAutomatedTracking);
-            if (state.State is Guid || Guid.TryParse(state.State?.ToString(), out _))
-            {
-                tryAddTag(Tags.User.Id, state.State!.ToString());
-            }
-        }
-        else
-        {
-            setTag(Tags.AppSec.EventsUsers.LoginEvent.FailureTrack, "true");
-            setTag(Tags.AppSec.EventsUsers.LoginEvent.FailureAutoMode, security.Settings.UserEventsAutomatedTracking);
-            tryAddTag(Tags.AppSec.EventsUsers.LoginEvent.FailureUserExists, userExist ? "true" : "false");
-            if (state.State is Guid || Guid.TryParse(state.State?.ToString(), out _))
-            {
-                tryAddTag(Tags.AppSec.EventsUsers.LoginEvent.FailureUserId, state.State!.ToString());
-            }
+            tryAddTag(Tags.AppSec.EventsUsers.LoginEvent.FailureUserId, state.State!.ToString());
         }
 
         security.SetTraceSamplingPriority(span);
