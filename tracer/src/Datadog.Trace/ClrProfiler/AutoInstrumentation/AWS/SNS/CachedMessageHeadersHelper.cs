@@ -8,15 +8,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.IO;
 using Datadog.Trace.DuckTyping;
 
 namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
 {
-    internal static class CachedMessageHeadersHelper<TMarkerType>
+internal static class CachedMessageHeadersHelper<TMarkerType>
     {
-        private const string StringDataType = "String";
+        private const string BinaryDataType = "Binary";
 
-        private static readonly Func<string, object> _createMessageAttributeValue;
+        private static readonly Func<MemoryStream, object> _createMessageAttributeValue;
         private static readonly Func<IDictionary> _createDict;
 
         static CachedMessageHeadersHelper()
@@ -28,7 +29,7 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
             DynamicMethod createMessageAttributeValueMethod = new DynamicMethod(
                 $"SnsCachedMessageHeadersHelpers",
                 messageAttributeValueType,
-                parameterTypes: new Type[] { typeof(string) },
+                parameterTypes: new Type[] { typeof(MemoryStream) },
                 typeof(DuckType).Module,
                 true);
 
@@ -36,17 +37,16 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
             messageAttributeIL.Emit(OpCodes.Newobj, messageAttributeValueCtor);
 
             messageAttributeIL.Emit(OpCodes.Dup);
-            messageAttributeIL.Emit(OpCodes.Ldstr, StringDataType);
+            messageAttributeIL.Emit(OpCodes.Ldstr, BinaryDataType);
             messageAttributeIL.Emit(OpCodes.Callvirt, messageAttributeValueType.GetProperty("DataType").GetSetMethod());
 
             messageAttributeIL.Emit(OpCodes.Dup);
             messageAttributeIL.Emit(OpCodes.Ldarg_0);
-            messageAttributeIL.Emit(OpCodes.Callvirt, messageAttributeValueType.GetProperty("StringValue").GetSetMethod());
+            messageAttributeIL.Emit(OpCodes.Callvirt, messageAttributeValueType.GetProperty("BinaryValue").GetSetMethod());
 
             messageAttributeIL.Emit(OpCodes.Ret);
 
-            _createMessageAttributeValue = (Func<string, object>)createMessageAttributeValueMethod.CreateDelegate(typeof(Func<string, object>));
-
+            _createMessageAttributeValue = (Func<MemoryStream, object>)createMessageAttributeValueMethod.CreateDelegate(typeof(Func<MemoryStream, object>));
             // Initialize delegate for creating a Dictionary<string, MessageAttributeValue> object
             var genericDictType = typeof(Dictionary<,>);
             var constructedDictType = genericDictType.MakeGenericType(new Type[] { typeof(string), messageAttributeValueType });
@@ -71,7 +71,7 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
             return _createDict();
         }
 
-        public static object CreateMessageAttributeValue(string value)
+        public static object CreateMessageAttributeValue(MemoryStream value)
         {
             return _createMessageAttributeValue(value);
         }

@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using Datadog.Trace.DataStreamsMonitoring;
 using Datadog.Trace.Propagators;
 
@@ -16,25 +17,25 @@ namespace Datadog.Trace.ClrProfiler.AutoInstrumentation.AWS.SNS
     {
         private const string SnsKey = "_datadog";
 
-    private static void Inject<TMessageRequest>(SpanContext context, IDictionary messageAttributes)
-    {
-        // Consolidate headers into one JSON object with <header_name>:<value>
-        var sb = Util.StringBuilderCache.Acquire(Util.StringBuilderCache.MaxBuilderSize);
-        sb.Append('{');
-        SpanContextPropagator.Instance.Inject(context, sb, default(StringBuilderCarrierSetter));
-        sb.Remove(startIndex: sb.Length - 1, length: 1); // Remove trailing comma
-        sb.Append('}');
+        private static void Inject<TMessageRequest>(SpanContext context, IDictionary messageAttributes)
+        {
+            // Consolidate headers into one JSON object with <header_name>:<value>
+            var sb = Util.StringBuilderCache.Acquire(Util.StringBuilderCache.MaxBuilderSize);
+            sb.Append('{');
+            SpanContextPropagator.Instance.Inject(context, sb, default(StringBuilderCarrierSetter));
+            sb.Remove(startIndex: sb.Length - 1, length: 1); // Remove trailing comma
+            sb.Append('}');
 
-        var resultString = Util.StringBuilderCache.GetStringAndRelease(sb);
-        var messageAttribute = CachedMessageHeadersHelper<TMessageRequest>.CreateMessageAttributeValue(resultString);
+            var resultString = Util.StringBuilderCache.GetStringAndRelease(sb);
 
-        // assuming messageAttribute is an object that has DataType and BinaryValue properties
-        messageAttribute.DataType = "Binary";
-        messageAttribute.BinaryValue = resultString;
+            // Convert the resulting string to a MemoryStream
+            var resultStream = new MemoryStream(Encoding.UTF8.GetBytes(resultString));
 
-        messageAttributes[SnsKey] = messageAttribute;
-    }
+            // Create a MessageAttributeValue with BinaryValue set to the resultStream
+            var messageAttribute = CachedMessageHeadersHelper<TMessageRequest>.CreateMessageAttributeValue(resultStream);
 
+            messageAttributes[SnsKey] = messageAttribute;
+        }
 
         public static void InjectHeadersIntoMessage<TMessageRequest>(IContainsMessageAttributes carrier, SpanContext spanContext)
         {
