@@ -20,13 +20,16 @@ namespace Datadog.Trace.ClrProfiler.Managed.Tests.AutoInstrumentation.AWS.SNS
         public void TestSnsSendMessageTraceInjectionWithNoMessageAttributes()
         {
             // Arrange
-            var mockSpanContext = new Mock<SpanContext>();
+            ulong traceId = 12345;
+            ulong spanId = 67890;
+            string serviceName = "TestService1";
+            var testSpanContext = new TestSpanContext(traceId, spanId, serviceName);
             var mockCarrier = new Mock<IContainsMessageAttributes>();
             var messageAttributes = new Dictionary<string, MockMessageAttributeValue>();
             mockCarrier.Setup(x => x.MessageAttributes).Returns(messageAttributes);
 
             // Act
-            ContextPropagation.InjectHeadersIntoMessage<MockMessageAttributeValue>(mockCarrier.Object, mockSpanContext.Object);
+            ContextPropagation.InjectHeadersIntoMessage<MockMessageAttributeValue>(mockCarrier.Object, testSpanContext);
 
             // Assert
             messageAttributes.Should().ContainKey("_datadog");
@@ -37,7 +40,10 @@ namespace Datadog.Trace.ClrProfiler.Managed.Tests.AutoInstrumentation.AWS.SNS
         public void TestSnsSendMessageTraceInjectionWithMessageAttributes()
         {
             // Arrange
-            var mockSpanContext = new Mock<SpanContext>();
+            ulong traceId = 12345;
+            ulong spanId = 67890;
+            string serviceName = "TestService2";
+            var testSpanContext = new TestSpanContext(traceId, spanId, serviceName);
             var mockCarrier = new Mock<IContainsMessageAttributes>();
             var messageAttributes = new Dictionary<string, MockMessageAttributeValue>
             {
@@ -54,7 +60,7 @@ namespace Datadog.Trace.ClrProfiler.Managed.Tests.AutoInstrumentation.AWS.SNS
             mockCarrier.Setup(x => x.MessageAttributes).Returns(messageAttributes);
 
             // Act
-            ContextPropagation.InjectHeadersIntoMessage<MockMessageAttributeValue>(mockCarrier.Object, mockSpanContext.Object);
+            ContextPropagation.InjectHeadersIntoMessage<MockMessageAttributeValue>(mockCarrier.Object, testSpanContext);
 
             // Assert
             messageAttributes.Should().ContainKey("_datadog");
@@ -67,6 +73,14 @@ namespace Datadog.Trace.ClrProfiler.Managed.Tests.AutoInstrumentation.AWS.SNS
             public string DataType { get; set; }
 
             public MemoryStream BinaryValue { get; set; }
+        }
+
+        private class TestSpanContext : SpanContext
+        {
+            public TestSpanContext(ulong traceId, ulong spanId, string serviceName)
+                : base(traceId, spanId, null, serviceName)
+            {
+            }
         }
     }
 }
